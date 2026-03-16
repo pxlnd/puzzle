@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Level Builder</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#12121f;color:#ddd;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Header ── */
+header{background:#1a1a30;padding:10px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #2a2a50;flex-shrink:0}
+header h1{font-size:17px;color:#e94560;letter-spacing:1px}
+header .sub{font-size:11px;color:#666;margin-left:auto}
+
+/* ── Layout ── */
+.body{display:flex;flex:1;overflow:hidden}
+.panel{background:#1a1a30;padding:14px;overflow-y:auto;border-right:1px solid #2a2a50;width:200px;flex-shrink:0;display:flex;flex-direction:column;gap:4px}
+.panel.right{border-right:none;border-left:1px solid #2a2a50;width:220px}
+.center{flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:24px;background:#12121f}
+.bottom{height:160px;background:#0d0d1a;border-top:1px solid #2a2a50;display:flex;flex-direction:column;padding:10px 16px;flex-shrink:0}
+
+/* ── Panel labels ── */
+.ph{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#555;margin-top:10px;margin-bottom:4px;font-weight:600}
+.ph:first-child{margin-top:0}
+hr{border:none;border-top:1px solid #2a2a50;margin:10px 0}
+
+/* ── Inputs ── */
+label{font-size:11px;color:#888;display:block;margin-bottom:3px;margin-top:8px}
+label:first-of-type{margin-top:0}
+input[type=number],select{width:100%;background:#0f0f22;border:1px solid #2a2a50;color:#ddd;padding:5px 8px;border-radius:5px;font-size:12px;outline:none}
+input[type=number]:focus,select:focus{border-color:#e94560}
+.check-row{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:11px;color:#9a9ab4}
+.check-row input{accent-color:#e94560}
+
+/* ── Buttons ── */
+.btn{width:100%;padding:7px;background:#1e1e40;border:1px solid #2a2a50;color:#ccc;border-radius:5px;cursor:pointer;font-size:12px;text-align:center;margin-top:6px;transition:background .15s}
+.btn:hover{background:#2a2a55}
+.btn.primary{background:#e94560;border-color:#e94560;color:#fff}
+.btn.primary:hover{background:#c73650}
+.btn.sm{padding:4px 8px;font-size:11px;margin-top:0;width:auto}
+.btn.danger{background:#3a1020;border-color:#6a2030;color:#ff8888}
+.btn.danger:hover{background:#5a1828}
+
+/* ── Color dots ── */
+.color-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.cdot,.odot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .12s,border-color .12s}
+.cdot:hover,.odot:hover{transform:scale(1.18)}
+.cdot.sel,.odot.sel{border-color:#fff}
+
+/* ── Axis buttons ── */
+.axis-row{display:flex;gap:5px;margin-top:5px}
+.ax-btn{flex:1;padding:5px;background:#1e1e40;border:1px solid #2a2a50;color:#888;border-radius:4px;cursor:pointer;font-size:12px;text-align:center}
+.ax-btn.active{background:#e94560;border-color:#e94560;color:#fff}
+
+/* ── Wall list ── */
+.wall-item{display:flex;align-items:center;gap:6px;padding:5px 7px;background:#0f0f22;border-radius:4px;margin-top:5px;font-size:11px;color:#bbb}
+.wdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.wdel{cursor:pointer;margin-left:auto;color:#e94560;font-size:14px;line-height:1;padding:0 2px}
+.wdel:hover{color:#ff6080}
+.camp-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto;margin-top:6px}
+.camp-item{padding:7px;border:1px solid #2a2a50;border-radius:6px;background:#0f0f22;cursor:pointer;transition:border-color .12s,background .12s}
+.camp-item:hover{border-color:#3c3c72}
+.camp-item.sel{border-color:#e94560;background:#1f1530}
+.camp-title{font-size:11px;color:#ddd}
+.camp-meta{font-size:10px;color:#8e8ea7;margin-top:3px;line-height:1.45}
+.camp-actions{display:flex;gap:6px;margin-top:6px}
+
+/* ── Grid ── */
+#grid-wrap{position:relative;display:inline-block}
+#grid{display:grid;gap:5px;cursor:crosshair;user-select:none;position:relative}
+.gc{width:52px;height:52px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;position:relative;transition:background .1s}
+.gc.hv{background:rgba(255,255,255,0.13)}
+.gc.hv-bad{background:rgba(255,60,60,0.18)}
+
+/* figure overlay on grid */
+.fov{position:absolute;z-index:2;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.92;transition:filter .12s}
+.fov:hover{filter:brightness(1.2);z-index:5}
+.fov-cell{position:absolute;width:52px;height:52px;border-radius:7px;box-shadow:inset 0 2px 0 rgba(255,255,255,.18),inset 0 -2px 0 rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.24)}
+.fov .fax{font-size:clamp(14px,40%,22px);opacity:.78;pointer-events:none;z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+.bov{position:absolute;z-index:1;pointer-events:none}
+.bov-cell{position:absolute;width:52px;height:52px;border-radius:7px;background:linear-gradient(180deg,#7a8594 0%,#606b7b 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,.2),inset 0 -2px 0 rgba(0,0,0,.25),0 2px 6px rgba(0,0,0,.28)}
+.hv-cell{position:absolute;width:52px;height:52px;border-radius:7px;border:2px dashed rgba(255,255,255,.55);box-sizing:border-box}
+
+/* wall indicator bands on grid */
+.wband{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#000;pointer-events:none;border-radius:3px;opacity:.85}
+
+/* ── Code output ── */
+.out-hdr{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.out-hdr h3{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#555;font-weight:600}
+#code-out{flex:1;font-family:'Cascadia Code','Fira Code',monospace;font-size:11px;background:transparent;border:none;color:#7ec87e;resize:none;width:100%;outline:none;line-height:1.5}
+
+/* wall css colors */
+.bg-cyan{background:#29b6f6}.bg-purple{background:#c84bdf}.bg-pink{background:#ff5fa2}
+.bg-orange{background:#ff9800}.bg-blue{background:#1e88e5}.bg-yellow{background:#ffc107}
+.bg-red{background:#f44336}.bg-green{background:#4caf50}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⬛ Level Builder</h1>
+  <span class="sub">Наводи → превью | Клик → разместить | ПКМ по клетке → удалить фигуру/блок</span>
+</header>
+
+<div class="body">
+
+<!-- ══ LEFT PANEL ══ -->
+<div class="panel">
+
+  <div class="ph">Загрузка / выбор</div>
+  <select id="preset-levels"></select>
+  <button class="btn" onclick="refreshPresetLevels()">Обновить список уровней</button>
+  <button class="btn" onclick="loadSelectedPresetLevel()">Загрузить выбранный уровень</button>
+  <label>Загрузить .js / .json
+    <input type="file" id="level-file" accept=".js,.json" style="margin-top:6px;width:100%;font-size:11px;color:#888">
+  </label>
+
+  <hr>
+  <div class="ph">Конструктор кампании</div>
+  <label>Вариантов на уровень
+    <input type="number" id="gen-per-level" value="10" min="1" max="100">
+  </label>
+  <label>Источник генерации
+    <select id="gen-source">
+      <option value="current" selected>Текущий загруженный уровень</option>
+      <option value="all">Все уровни из списка</option>
+    </select>
+  </label>
+  <label class="check-row">
+    <input type="checkbox" id="gen-color-remap" checked>
+    Перемешивать цвета (сохраняя соответствия)
+  </label>
+  <label class="check-row">
+    <input type="checkbox" id="gen-time-jitter" checked>
+    Менять время ±25%
+  </label>
+  <label class="check-row">
+    <input type="checkbox" id="gen-layout-scramble" checked>
+    Генерировать новые раскладки (с проверкой)
+  </label>
+  <label>Шагов перестановки
+    <input type="number" id="gen-scramble-steps" value="14" min="2" max="120">
+  </label>
+  <label class="check-row">
+    <input type="checkbox" id="gen-mutate-walls" checked>
+    Менять стены (цвет/размер/позиция/сторона)
+  </label>
+  <label class="check-row">
+    <input type="checkbox" id="gen-mutate-blocks" checked>
+    Менять серые блоки (форма/позиция)
+  </label>
+  <label class="check-row">
+    <input type="checkbox" id="gen-mutate-figures" checked>
+    Менять фигуры (форма/цвет/ось/outline)
+  </label>
+  <label class="check-row">
+    <input type="checkbox" id="gen-mutate-grid" checked>
+    Менять размер грида (cols/rows)
+  </label>
+  <button class="btn" onclick="importAllPresetToCampaign()">Импортировать все текущие уровни</button>
+  <button class="btn" onclick="generateCampaignVariants()">Сгенерировать варианты</button>
+  <button class="btn" onclick="addCurrentLevelToCampaign()">Добавить текущий уровень</button>
+  <button class="btn danger" onclick="clearCampaignLevels()">Очистить список</button>
+  <button class="btn primary" onclick="downloadCampaignAppend()">Скачать набор для добавления</button>
+  <button class="btn primary" onclick="downloadCampaignOverride()">Скачать набор для замены</button>
+  <div style="font-size:10px;color:#707090;line-height:1.5;margin-top:4px">
+    Добавление: подключите файл после `levels/level*.js`.
+    <br>Замена: подключите файл после `js/constants.js` и до `js/engine.js`.
+  </div>
+  <div class="camp-list" id="campaign-list"></div>
+
+  <hr>
+  <div class="ph">Сетка</div>
+  <label>Колонны (cols)
+    <input type="number" id="in-cols" value="6" min="2" max="12">
+  </label>
+  <label>Строки (rows)
+    <input type="number" id="in-rows" value="7" min="2" max="16">
+  </label>
+  <label>Время (сек)
+    <input type="number" id="in-time" value="50" min="1" max="999">
+  </label>
+  <button class="btn" onclick="applyGrid()">Применить</button>
+
+  <hr>
+  <div class="ph">Стенки</div>
+
+  <label>Направление
+    <select id="w-dir">
+      <option value="top">▲ top</option>
+      <option value="bottom">▼ bottom</option>
+      <option value="left">◀ left</option>
+      <option value="right">▶ right</option>
+    </select>
+  </label>
+  <label>Цвет стенки
+    <select id="w-color">
+      <option value="cyan">cyan</option>
+      <option value="purple">purple</option>
+      <option value="pink">pink</option>
+      <option value="orange">orange</option>
+      <option value="blue">blue</option>
+      <option value="yellow">yellow</option>
+      <option value="red">red</option>
+      <option value="green">green</option>
+    </select>
+  </label>
+  <label>Начало (col/row)
+    <input type="number" id="w-start" value="0" min="0">
+  </label>
+  <label>Ячеек (cells)
+    <input type="number" id="w-cells" value="3" min="1" max="12">
+  </label>
+  <button class="btn primary" onclick="addWall()">+ Добавить стенку</button>
+
+  <div id="wall-list"></div>
+
+  <hr>
+  <div class="ph">Фигуры (<span id="fig-count">0</span>)</div>
+  <button class="btn danger" onclick="clearFigures()">Очистить фигуры</button>
+
+  <hr>
+  <div class="ph">Серые блоки (<span id="block-count">0</span>)</div>
+  <button class="btn danger" onclick="clearBlocks()">Очистить блоки</button>
+  <div id="block-list"></div>
+
+</div>
+
+<!-- ══ CENTER ══ -->
+<div class="center">
+  <div id="grid-wrap">
+    <div id="grid"></div>
+  </div>
+</div>
+
+<!-- ══ RIGHT PANEL ══ -->
+<div class="panel right">
+
+  <div class="ph">Режим</div>
+  <div class="axis-row">
+    <div class="ax-btn active" id="mode-figure" onclick="setPlaceMode('figure')">Фигура</div>
+    <div class="ax-btn" id="mode-block" onclick="setPlaceMode('block')">Блок</div>
+  </div>
+
+  <div class="ph">Форма</div>
+  <select id="sel-shape" onchange="renderGrid()">
+    <option value="1x1">1×1</option>
+    <option value="2x1">2×1 horizontal</option>
+    <option value="3x1">3×1 horizontal</option>
+    <option value="1x2">1×2 vertical</option>
+    <option value="1x3">1×3 vertical</option>
+    <option value="1x4">1×4 vertical</option>
+    <option value="2x2">2×2 square</option>
+    <option value="2x3">2×3</option>
+    <option value="2x4">2×4</option>
+    <option value="2x5">2×5</option>
+    <option value="3x2">3×2</option>
+    <option value="3x3">3×3 square</option>
+    <option value="3x4">3×4 big</option>
+    <option value="L">L</option>
+    <option value="J">J</option>
+    <option value="T">T</option>
+    <option value="S">S</option>
+    <option value="Z">Z</option>
+    <option value="fat_T">fat T</option>
+    <option value="fat_J">fat J</option>
+    <option value="mini_L">mini L</option>
+    <option value="mini_J">mini J</option>
+  </select>
+
+  <div class="ph" style="margin-top:12px">Форма блока</div>
+  <select id="sel-block-shape" onchange="renderGrid()">
+    <option value="1x1">1×1</option>
+    <option value="2x1">2×1 horizontal</option>
+    <option value="3x1">3×1 horizontal</option>
+    <option value="1x2">1×2 vertical</option>
+    <option value="1x3">1×3 vertical</option>
+    <option value="1x4">1×4 vertical</option>
+    <option value="2x2">2×2 square</option>
+    <option value="2x3">2×3</option>
+    <option value="2x4">2×4</option>
+    <option value="2x5">2×5</option>
+    <option value="3x2">3×2</option>
+    <option value="3x3">3×3 square</option>
+    <option value="3x4">3×4 big</option>
+    <option value="L">L</option>
+    <option value="J">J</option>
+    <option value="T">T</option>
+    <option value="S">S</option>
+    <option value="Z">Z</option>
+    <option value="fat_T">fat T</option>
+    <option value="fat_J">fat J</option>
+    <option value="mini_L">mini L</option>
+    <option value="mini_J">mini J</option>
+  </select>
+
+  <div class="ph" style="margin-top:12px">Цвет фигуры</div>
+  <div class="color-row" id="color-row"></div>
+  <div style="margin-top:6px;display:flex;align-items:center;gap:6px">
+    <span style="font-size:11px;color:#666">Hex:</span>
+    <input type="color" id="color-custom" value="#c84bdf" style="width:36px;height:24px;padding:1px;border-radius:4px;border:1px solid #2a2a50;background:#0f0f22;cursor:pointer">
+    <input type="text" id="color-hex" value="#c84bdf" style="flex:1;font-size:11px;padding:4px 6px;border-radius:4px;border:1px solid #2a2a50;background:#0f0f22;color:#ddd">
+  </div>
+
+  <div class="ph" style="margin-top:12px">Контур фигуры</div>
+  <label class="check-row">
+    <input type="checkbox" id="outline-enabled">
+    Включить второй цвет (сначала снять контур)
+  </label>
+  <div class="color-row" id="outline-color-row"></div>
+  <div style="margin-top:6px;display:flex;align-items:center;gap:6px">
+    <span style="font-size:11px;color:#666">Hex:</span>
+    <input type="color" id="outline-custom" value="#4caf50" style="width:36px;height:24px;padding:1px;border-radius:4px;border:1px solid #2a2a50;background:#0f0f22;cursor:pointer">
+    <input type="text" id="outline-hex" value="#4caf50" style="flex:1;font-size:11px;padding:4px 6px;border-radius:4px;border:1px solid #2a2a50;background:#0f0f22;color:#ddd">
+  </div>
+
+  <div class="ph" style="margin-top:12px">Ось движения</div>
+  <div class="axis-row">
+    <div class="ax-btn active" id="ax-none" onclick="setAxis(null)">Нет</div>
+    <div class="ax-btn" id="ax-x" onclick="setAxis('x')">↔ X</div>
+    <div class="ax-btn" id="ax-y" onclick="setAxis('y')">↕ Y</div>
+  </div>
+
+  <hr>
+  <div class="ph">Цветовой ключ</div>
+  <div style="font-size:10px;color:#555;line-height:1.6">
+    Цвет фигуры должен совпадать с цветом стенки чтобы фигура в неё «провалилась».
+    <br><br>
+    Соответствия:
+  </div>
+  <div id="color-key-map" style="margin-top:6px;font-size:10px;line-height:1.8;color:#888"></div>
+
+</div>
+</div>
+
+<!-- ══ BOTTOM ══ -->
+<div class="bottom">
+  <div class="out-hdr">
+    <h3>Сгенерированный код</h3>
+    <button class="btn sm" onclick="copyCode()">Копировать</button>
+    <button class="btn sm primary" onclick="downloadLevel()">Скачать levelN.js</button>
+    <span id="copy-ok" style="font-size:11px;color:#7ec87e;display:none">✓ скопировано</span>
+    <label style="margin:0;margin-left:auto;display:flex;align-items:center;gap:5px;font-size:11px;color:#666">
+      Номер уровня:
+      <input type="number" id="level-num" value="9" min="1" style="width:50px;padding:3px 6px;font-size:12px">
+    </label>
+  </div>
+  <textarea id="code-out" readonly></textarea>
+</div>
+
+<script>
+// ── Shapes ─────────────────────────────────────────────────────────────────
+const SHAPES = {
+  '1x1':   [[0,0]],
+  '2x1':   [[0,0],[1,0]],
+  '3x1':   [[0,0],[1,0],[2,0]],
+  '1x2':   [[0,0],[0,1]],
+  '1x3':   [[0,0],[0,1],[0,2]],
+  '1x4':   [[0,0],[0,1],[0,2],[0,3]],
+  '2x2':   [[0,0],[1,0],[0,1],[1,1]],
+  '3x4':   [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2],[2,2],[0,3],[1,3],[2,3]],
+  '2x5':   [[0,0],[1,0],[0,1],[1,1],[0,2],[1,2],[0,3],[1,3],[0,4],[1,4]],
+  '3x3':   [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2],[2,2]],
+  '2x3':   [[0,0],[1,0],[0,1],[1,1],[0,2],[1,2]],
+  '2x4':   [[0,0],[1,0],[0,1],[1,1],[0,2],[1,2],[0,3],[1,3]],
+  '3x2':   [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]],
+  'L':     [[0,0],[0,1],[0,2],[1,2]],
+  'J':     [[1,0],[1,1],[0,2],[1,2]],
+  'T':     [[0,0],[1,0],[2,0],[1,1]],
+  'S':     [[1,0],[2,0],[0,1],[1,1]],
+  'Z':     [[0,0],[1,0],[1,1],[2,1]],
+  'fat_T': [[0,0],[1,0],[0,1],[1,1],[2,1],[0,2],[1,2]],
+  'fat_J': [[1,0],[2,0],[1,1],[2,1],[0,2],[1,2],[2,2]],
+  'mini_L': [[0,0],[0,1],[1,1]],
+  'mini_J': [[0,0],[1,0],[1,1]],  // actually [[1,0],[0,1],[1,1]] wait no:
+  // mini_J from constants: [[0,0],[1,0],[1,1]] — keeping as-is
+};
+
+const COLOR_KEY = {
+  '#4caf50':'green','#388e3c':'green','#43a047':'green',
+  '#29b6f6':'cyan','#00bcd4':'cyan','#26c6da':'cyan',
+  '#c84bdf':'purple','#ab47bc':'purple','#e040fb':'purple',
+  '#ff5fa2':'pink','#f06292':'pink',
+  '#ff9800':'orange','#f57c00':'orange','#ffa726':'orange',
+  '#1e88e5':'blue','#1976d2':'blue','#2196f3':'blue',
+  '#ffc107':'yellow','#ffb300':'yellow','#ff8f00':'yellow',
+  '#f44336':'red','#e53935':'red','#ef5350':'red',
+};
+
+const WALL_CSS = {
+  cyan:'#29b6f6',purple:'#c84bdf',pink:'#ff5fa2',
+  orange:'#ff9800',blue:'#1e88e5',yellow:'#ffc107',
+  red:'#f44336',green:'#4caf50',
+};
+
+const PRESET_COLORS = [
+  '#c84bdf','#29b6f6','#f44336','#ff9800',
+  '#ffc107','#4caf50','#1e88e5','#ff5fa2','#1976d2','#ff5722',
+];
+
+// ── State ──────────────────────────────────────────────────────────────────
+let state = { cols: 6, rows: 7, time: 50, walls: [], figures: [], blocks: [] };
+let selColor = '#c84bdf';
+let selOutlineColor = '#4caf50';
+let selOutlineEnabled = false;
+let selAxis  = null;
+let placeMode = 'figure';
+let hoverCol = -1, hoverRow = -1;
+let presetLevels = [];
+let campaignLevels = [];
+let selectedCampaignIdx = -1;
+
+const CELL = 52, GAP = 5;
+
+// ── Boot ───────────────────────────────────────────────────────────────────
+function boot() {
+  buildColorRow();
+  buildOutlineColorRow();
+  buildColorKeyMap();
+  applyGrid();
+  updateWallList();
+  updateBlockList();
+  refreshPresetLevels();
+  document.getElementById('level-file').addEventListener('change', onLevelFilePicked);
+  generateCode();
+}
+
+function buildColorRow() {
+  const row = document.getElementById('color-row');
+  row.innerHTML = '';
+  PRESET_COLORS.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'cdot' + (c === selColor ? ' sel' : '');
+    d.style.background = c;
+    d.title = COLOR_KEY[c] || c;
+    d.onclick = () => { selColor = c; syncColorInputs(); refreshDots(); renderGrid(); };
+    row.appendChild(d);
+  });
+}
+
+function buildOutlineColorRow() {
+  const row = document.getElementById('outline-color-row');
+  row.innerHTML = '';
+  PRESET_COLORS.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'odot' + (c === selOutlineColor ? ' sel' : '');
+    d.style.background = c;
+    d.title = COLOR_KEY[c] || c;
+    d.onclick = () => {
+      selOutlineColor = c;
+      syncOutlineInputs();
+      refreshOutlineDots();
+      renderGrid();
+    };
+    row.appendChild(d);
+  });
+}
+
+function syncColorInputs() {
+  document.getElementById('color-custom').value = selColor;
+  document.getElementById('color-hex').value = selColor;
+}
+
+function syncOutlineInputs() {
+  document.getElementById('outline-custom').value = selOutlineColor;
+  document.getElementById('outline-hex').value = selOutlineColor;
+  document.getElementById('outline-enabled').checked = selOutlineEnabled;
+}
+
+function refreshDots() {
+  document.querySelectorAll('#color-row .cdot').forEach((d,i) => {
+    d.classList.toggle('sel', PRESET_COLORS[i] === selColor);
+  });
+}
+
+function refreshOutlineDots() {
+  document.querySelectorAll('#outline-color-row .odot').forEach((d, i) => {
+    d.classList.toggle('sel', PRESET_COLORS[i] === selOutlineColor);
+  });
+}
+
+document.getElementById('color-custom').addEventListener('input', function() {
+  selColor = this.value;
+  document.getElementById('color-hex').value = selColor;
+  refreshDots();
+  renderGrid();
+});
+document.getElementById('color-hex').addEventListener('change', function() {
+  if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
+    selColor = this.value.toLowerCase();
+    document.getElementById('color-custom').value = selColor;
+    refreshDots();
+    renderGrid();
+  }
+});
+document.getElementById('outline-enabled').addEventListener('change', function() {
+  selOutlineEnabled = !!this.checked;
+  renderGrid();
+});
+document.getElementById('outline-custom').addEventListener('input', function() {
+  selOutlineColor = this.value.toLowerCase();
+  document.getElementById('outline-hex').value = selOutlineColor;
+  refreshOutlineDots();
+  renderGrid();
+});
+document.getElementById('outline-hex').addEventListener('change', function() {
+  if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
+    selOutlineColor = this.value.toLowerCase();
+    document.getElementById('outline-custom').value = selOutlineColor;
+    refreshOutlineDots();
+    renderGrid();
+  }
+});
+
+function buildColorKeyMap() {
+  const el = document.getElementById('color-key-map');
+  const map = {};
+  Object.entries(COLOR_KEY).forEach(([hex, name]) => {
+    if (!map[name]) map[name] = [];
+    map[name].push(hex);
+  });
+  el.innerHTML = Object.entries(map).map(([name, hexes]) =>
+    `<span style="color:${WALL_CSS[name]||'#aaa'}">■ ${name}</span> = ${hexes[0]}<br>`
+  ).join('');
+}
+
+function cloneJson(v) {
+  return JSON.parse(JSON.stringify(v));
+}
+
+function parseLevelObjectsFromJs(source) {
+  const out = [];
+  let pos = 0;
+  while (true) {
+    const pushAt = source.indexOf('LEVELS.push', pos);
+    if (pushAt === -1) break;
+    const openAt = source.indexOf('(', pushAt);
+    if (openAt === -1) break;
+    let i = openAt;
+    let depth = 0;
+    let quote = '';
+    let esc = false;
+    while (i < source.length) {
+      const ch = source[i];
+      if (quote) {
+        if (esc) esc = false;
+        else if (ch === '\\') esc = true;
+        else if (ch === quote) quote = '';
+      } else {
+        if (ch === '"' || ch === "'" || ch === '`') quote = ch;
+        else if (ch === '(') depth++;
+        else if (ch === ')') {
+          depth--;
+          if (depth === 0) break;
+        }
+      }
+      i++;
+    }
+    if (depth === 0) {
+      const expr = source.slice(openAt + 1, i).trim();
+      try {
+        const cfg = Function('return (' + expr + ');')();
+        if (cfg && typeof cfg === 'object') out.push(cfg);
+      } catch (_) {}
+    }
+    pos = i + 1;
+  }
+  return out;
+}
+
+function parseLevelsFromText(text, filename) {
+  const trimmed = text.trim();
+  if (!trimmed) return [];
+  if (trimmed[0] === '{' || trimmed[0] === '[') {
+    try {
+      const data = JSON.parse(trimmed);
+      if (Array.isArray(data)) return data.filter(v => v && typeof v === 'object');
+      if (data && typeof data === 'object') return [data];
+    } catch (_) {}
+  }
+  const jsLevels = parseLevelObjectsFromJs(text);
+  if (jsLevels.length) return jsLevels;
+  throw new Error('Не удалось распарсить уровень из ' + (filename || 'файла'));
+}
+
+function applyLoadedLevel(cfg, levelNumber) {
+  state.cols = parseInt(cfg.cols, 10) || 6;
+  state.rows = parseInt(cfg.rows, 10) || 7;
+  state.time = Math.max(1, parseInt(cfg.time, 10) || 50);
+  state.walls = cloneJson(cfg.walls || []);
+  state.figures = cloneJson(cfg.figures || []);
+  state.blocks = cloneJson(cfg.blocks || cfg.obstacles || []);
+
+  document.getElementById('in-cols').value = state.cols;
+  document.getElementById('in-rows').value = state.rows;
+  document.getElementById('in-time').value = state.time;
+  if (levelNumber) document.getElementById('level-num').value = levelNumber;
+
+  updateWallList();
+  updateBlockList();
+  renderGrid();
+  generateCode();
+}
+
+function normalizeLevelConfig(cfg) {
+  return {
+    cols: parseInt(cfg.cols, 10) || 6,
+    rows: parseInt(cfg.rows, 10) || 7,
+    time: Math.max(1, parseInt(cfg.time, 10) || 50),
+    walls: cloneJson(cfg.walls || []),
+    figures: cloneJson(cfg.figures || []),
+    blocks: cloneJson(cfg.blocks || cfg.obstacles || []),
+  };
+}
+
+function colorToWallKey(hex) {
+  if (!hex || typeof hex !== 'string') return null;
+  return COLOR_KEY[hex.trim().toLowerCase()] || null;
+}
+
+function shuffleArray(src) {
+  const arr = src.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+  }
+  return arr;
+}
+
+function randInt(min, max) {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+function chance(p) {
+  return Math.random() < p;
+}
+
+function pickRandom(arr) {
+  if (!arr || !arr.length) return null;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function shapeBounds(shapeName) {
+  const cells = SHAPES[shapeName] || [];
+  return {
+    maxC: Math.max(0, ...cells.map(c => c[0])),
+    maxR: Math.max(0, ...cells.map(c => c[1])),
+  };
+}
+
+function simCellsAt(fig, col, row) {
+  const cells = SHAPES[fig.shape] || [];
+  return cells.map(([dc, dr]) => [col + dc, row + dr]);
+}
+
+function simBuildOccupied(cfg, figures, skipIndex) {
+  const occupied = new Set();
+  (cfg.blocks || []).forEach((b) => {
+    const cells = SHAPES[b.shape] || [];
+    cells.forEach(([dc, dr]) => occupied.add((b.col + dc) + ',' + (b.row + dr)));
+  });
+  figures.forEach((f, idx) => {
+    if (idx === skipIndex) return;
+    simCellsAt(f, f.col, f.row).forEach(([c, r]) => occupied.add(c + ',' + r));
+  });
+  return occupied;
+}
+
+function simCanPlaceFigureAt(cfg, figures, idx, col, row, occupied) {
+  const fig = figures[idx];
+  const bounds = shapeBounds(fig.shape);
+  if (col < 0 || row < 0) return false;
+  if (col > cfg.cols - bounds.maxC - 1) return false;
+  if (row > cfg.rows - bounds.maxR - 1) return false;
+  const occ = occupied || simBuildOccupied(cfg, figures, idx);
+  return simCellsAt(fig, col, row).every(([c, r]) => !occ.has(c + ',' + r));
+}
+
+function simReachableAnchors(cfg, figures, idx) {
+  const fig = figures[idx];
+  const occ = simBuildOccupied(cfg, figures, idx);
+  const start = fig.col + ',' + fig.row;
+  const q = [[fig.col, fig.row]];
+  const seen = new Set([start]);
+  for (let qi = 0; qi < q.length; qi++) {
+    const [c, r] = q[qi];
+    const dirs = fig.axis === 'x'
+      ? [[1, 0], [-1, 0]]
+      : fig.axis === 'y'
+      ? [[0, 1], [0, -1]]
+      : [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    dirs.forEach(([dc, dr]) => {
+      const nc = c + dc;
+      const nr = r + dr;
+      const key = nc + ',' + nr;
+      if (seen.has(key)) return;
+      if (!simCanPlaceFigureAt(cfg, figures, idx, nc, nr, occ)) return;
+      seen.add(key);
+      q.push([nc, nr]);
+    });
+  }
+  return q.map(([c, r]) => ({ col: c, row: r }));
+}
+
+function maxWallCellsFor(cfg, dir) {
+  return (dir === 'top' || dir === 'bottom') ? cfg.cols : cfg.rows;
+}
+
+function mutateGrid(cfg) {
+  const nextCols = cfg.cols + randInt(-2, 2);
+  const nextRows = cfg.rows + randInt(-2, 2);
+  cfg.cols = Math.max(4, Math.min(12, nextCols));
+  cfg.rows = Math.max(4, Math.min(16, nextRows));
+}
+
+function normalizeWallPlacement(cfg, wall) {
+  const maxCells = Math.max(1, maxWallCellsFor(cfg, wall.dir));
+  const cells = Math.max(1, Math.min(maxCells, parseInt(wall.cells, 10) || 3));
+  const out = { color: wall.color, dir: wall.dir, cells };
+  if (wall.dir === 'top' || wall.dir === 'bottom') {
+    const maxCol = Math.max(0, cfg.cols - cells);
+    out.col = Math.max(0, Math.min(maxCol, parseInt(wall.col, 10) || 0));
+  } else {
+    const maxRow = Math.max(0, cfg.rows - cells);
+    out.row = Math.max(0, Math.min(maxRow, parseInt(wall.row, 10) || 0));
+  }
+  return out;
+}
+
+function wallRange(w) {
+  const start = (w.dir === 'top' || w.dir === 'bottom')
+    ? (parseInt(w.col, 10) || 0)
+    : (parseInt(w.row, 10) || 0);
+  const cells = Math.max(1, parseInt(w.cells, 10) || 3);
+  return { start, end: start + cells - 1 };
+}
+
+function wallsOverlapSameSide(a, b) {
+  if (a.dir !== b.dir) return false;
+  const ra = wallRange(a);
+  const rb = wallRange(b);
+  return !(ra.end < rb.start || rb.end < ra.start);
+}
+
+function requiredWallColorsFromFigures(cfg) {
+  const seen = new Set();
+  const out = [];
+  (cfg.figures || []).forEach((f) => {
+    const fillKey = colorToWallKey(f.color);
+    if (fillKey && !seen.has(fillKey)) {
+      seen.add(fillKey);
+      out.push(fillKey);
+    }
+    if (f.outlineColor) {
+      const outlineKey = colorToWallKey(f.outlineColor);
+      if (outlineKey && !seen.has(outlineKey)) {
+        seen.add(outlineKey);
+        out.push(outlineKey);
+      }
+    }
+  });
+  return out;
+}
+
+function buildNonOverlappingWall(cfg, existingWalls, colorKey) {
+  const dirs = shuffleArray(['top', 'bottom', 'left', 'right']);
+  for (const dir of dirs) {
+    const maxCells = Math.max(1, maxWallCellsFor(cfg, dir));
+    const cellsPool = [...new Set([Math.min(3, maxCells), Math.min(2, maxCells), 1])];
+    const cellsList = shuffleArray(cellsPool);
+    for (const cells of cellsList) {
+      const maxStart = Math.max(0, maxCells - cells);
+      const starts = [];
+      for (let s = 0; s <= maxStart; s++) starts.push(s);
+      for (const start of shuffleArray(starts)) {
+        const cand = normalizeWallPlacement(cfg, (dir === 'top' || dir === 'bottom')
+          ? { color: colorKey, dir, col: start, cells }
+          : { color: colorKey, dir, row: start, cells });
+        if (existingWalls.some((w) => wallsOverlapSameSide(w, cand))) continue;
+        return cand;
+      }
+    }
+  }
+  return null;
+}
+
+function ensureRequiredWallColors(cfg) {
+  const requiredColors = requiredWallColorsFromFigures(cfg);
+  const walls = (cfg.walls || []).map((w) => normalizeWallPlacement(cfg, w));
+  if (!requiredColors.length || !walls.length) {
+    cfg.walls = walls;
+    return;
+  }
+
+  while (walls.length < requiredColors.length) {
+    const missingColor = requiredColors[walls.length % requiredColors.length];
+    const extra = buildNonOverlappingWall(cfg, walls, missingColor);
+    if (!extra) break;
+    walls.push(extra);
+  }
+
+  const colorToIdx = new Map();
+  walls.forEach((w, idx) => {
+    if (!colorToIdx.has(w.color)) colorToIdx.set(w.color, []);
+    colorToIdx.get(w.color).push(idx);
+  });
+  const missing = requiredColors.filter((c) => !colorToIdx.has(c));
+  if (!missing.length) {
+    cfg.walls = walls;
+    return;
+  }
+
+  const figures = cfg.figures || [];
+  const scored = walls
+    .map((w, idx) => ({
+      idx,
+      score: wallScoreForFigures(w, cfg, figures),
+      duplicates: (colorToIdx.get(w.color) || []).length,
+    }))
+    .sort((a, b) => b.duplicates - a.duplicates || a.score - b.score);
+  const taken = new Set();
+  missing.forEach((colorKey, i) => {
+    const pick = scored.find((s) => !taken.has(s.idx)) || scored[i % scored.length];
+    if (!pick) return;
+    taken.add(pick.idx);
+    walls[pick.idx].color = colorKey;
+  });
+
+  cfg.walls = walls;
+}
+
+function mutateWalls(cfg) {
+  const dirs = ['top', 'bottom', 'left', 'right'];
+  const colors = Object.keys(WALL_CSS);
+  const requiredColors = requiredWallColorsFromFigures(cfg);
+  const colorPool = requiredColors.length ? requiredColors : colors;
+  const src = (cfg.walls || []).length ? cfg.walls : [{ color: 'cyan', dir: 'top', col: 0, cells: 3 }];
+  const placed = [];
+  src.forEach((w) => {
+    let picked = null;
+    for (let t = 0; t < 80; t++) {
+      let next = cloneJson(w);
+      if (chance(0.2)) next.color = pickRandom(colorPool) || next.color;
+      if (chance(0.28)) next.dir = pickRandom(dirs) || next.dir;
+      const maxCells = Math.max(1, maxWallCellsFor(cfg, next.dir));
+      const currCells = Math.max(1, parseInt(next.cells, 10) || 3);
+      if (chance(0.7)) next.cells = Math.max(1, Math.min(maxCells, currCells + randInt(-2, 2)));
+      next = normalizeWallPlacement(cfg, next);
+      if (next.dir === 'top' || next.dir === 'bottom') {
+        next.col = randInt(0, Math.max(0, cfg.cols - next.cells));
+      } else {
+        next.row = randInt(0, Math.max(0, cfg.rows - next.cells));
+      }
+      next = normalizeWallPlacement(cfg, next);
+      if (placed.some((p) => wallsOverlapSameSide(p, next))) {
+        continue;
+      }
+      picked = next;
+      break;
+    }
+    if (!picked) {
+      // fallback: ставим маленькую стенку в свободный слот
+      for (const dir of dirs) {
+        const maxCells = Math.max(1, maxWallCellsFor(cfg, dir));
+        for (let cells = 1; cells <= Math.min(2, maxCells); cells++) {
+          const maxStart = maxCells - cells;
+          for (let start = 0; start <= maxStart; start++) {
+            const cand = normalizeWallPlacement(cfg, dir === 'top' || dir === 'bottom'
+              ? { color: pickRandom(colorPool) || 'cyan', dir, col: start, cells }
+              : { color: pickRandom(colorPool) || 'cyan', dir, row: start, cells });
+            if (placed.some((p) => wallsOverlapSameSide(p, cand))) continue;
+            picked = cand;
+            break;
+          }
+          if (picked) break;
+        }
+        if (picked) break;
+      }
+    }
+    if (picked) placed.push(picked);
+  });
+  while (placed.length < requiredColors.length) {
+    const nextColor = requiredColors[placed.length % requiredColors.length];
+    const extra = buildNonOverlappingWall(cfg, placed, nextColor);
+    if (!extra) break;
+    placed.push(extra);
+  }
+  cfg.walls = placed;
+  ensureRequiredWallColors(cfg);
+}
+
+function sanitizeWalls(cfg) {
+  const src = (cfg.walls || []).map((w) => normalizeWallPlacement(cfg, w));
+  const out = [];
+  src.forEach((w) => {
+    if (out.some((p) => wallsOverlapSameSide(p, w))) return;
+    out.push(w);
+  });
+  if (!out.length) {
+    out.push(normalizeWallPlacement(cfg, { color: 'cyan', dir: 'top', col: 0, cells: Math.min(3, cfg.cols) }));
+  }
+  cfg.walls = out;
+}
+
+function shapeCells(shapeName) {
+  return SHAPES[shapeName] || SHAPES['1x1'];
+}
+
+function entityCells(shapeName, col, row) {
+  return shapeCells(shapeName).map(([dc, dr]) => [col + dc, row + dr]);
+}
+
+function canPlaceEntity(shapeName, col, row, cols, rows, occupied) {
+  const b = shapeBounds(shapeName);
+  if (col < 0 || row < 0) return false;
+  if (col > cols - b.maxC - 1) return false;
+  if (row > rows - b.maxR - 1) return false;
+  return entityCells(shapeName, col, row).every(([c, r]) => !occupied.has(c + ',' + r));
+}
+
+function markEntity(shapeName, col, row, occupied) {
+  entityCells(shapeName, col, row).forEach(([c, r]) => occupied.add(c + ',' + r));
+}
+
+function randomPlaceShape(shapeName, cols, rows, occupied, attempts) {
+  const tries = attempts || 120;
+  const b = shapeBounds(shapeName);
+  const maxCol = Math.max(0, cols - b.maxC - 1);
+  const maxRow = Math.max(0, rows - b.maxR - 1);
+  for (let i = 0; i < tries; i++) {
+    const col = randInt(0, maxCol);
+    const row = randInt(0, maxRow);
+    if (!canPlaceEntity(shapeName, col, row, cols, rows, occupied)) continue;
+    return { col, row };
+  }
+  return null;
+}
+
+function randomShapeName() {
+  return pickRandom(Object.keys(SHAPES)) || '1x1';
+}
+
+function mutateBlocksAndFigures(cfg, opts) {
+  const wallColors = [...new Set((cfg.walls || []).map(w => w.color).filter(Boolean))];
+  const wallHexes = wallColors.map(c => WALL_CSS[c]).filter(Boolean);
+  const fallbackHexes = Object.values(WALL_CSS);
+  const colorPool = wallHexes.length ? wallHexes : fallbackHexes;
+  const occupied = new Set();
+  const newBlocks = [];
+  const newFigures = [];
+
+  const baseBlocks = cloneJson(cfg.blocks || []);
+  const baseFigures = cloneJson(cfg.figures || []);
+
+  baseBlocks.forEach((b) => {
+    let shape = b.shape;
+    if (opts.mutateBlocks && chance(0.75)) shape = randomShapeName();
+    const place = opts.mutateBlocks
+      ? (randomPlaceShape(shape, cfg.cols, cfg.rows, occupied, 180) ||
+         (canPlaceEntity(b.shape, b.col, b.row, cfg.cols, cfg.rows, occupied) ? { col: b.col, row: b.row } : null))
+      : (canPlaceEntity(b.shape, b.col, b.row, cfg.cols, cfg.rows, occupied) ? { col: b.col, row: b.row } : null);
+    if (!place) return;
+    newBlocks.push({ shape, col: place.col, row: place.row });
+    markEntity(shape, place.col, place.row, occupied);
+  });
+
+  baseFigures.forEach((f) => {
+    let shape = f.shape;
+    let axis = f.axis || null;
+    let color = f.color;
+    let outlineColor = f.outlineColor || null;
+
+    if (opts.mutateFigures) {
+      if (chance(0.72)) shape = randomShapeName();
+      if (chance(0.45)) axis = pickRandom([null, 'x', 'y']);
+      if (chance(0.8)) color = pickRandom(colorPool) || color;
+      if (chance(0.7)) {
+        if (chance(0.5)) {
+          const outlinePool = colorPool.filter(c => c !== color);
+          outlineColor = pickRandom(outlinePool) || pickRandom(colorPool) || null;
+        } else {
+          outlineColor = null;
+        }
+      }
+    }
+
+    const place = opts.mutateFigures
+      ? (randomPlaceShape(shape, cfg.cols, cfg.rows, occupied, 240) ||
+         (canPlaceEntity(f.shape, f.col, f.row, cfg.cols, cfg.rows, occupied) ? { col: f.col, row: f.row } : null))
+      : (canPlaceEntity(f.shape, f.col, f.row, cfg.cols, cfg.rows, occupied) ? { col: f.col, row: f.row } : null);
+    if (!place) return;
+    const nextFig = { shape, color, col: place.col, row: place.row };
+    if (axis) nextFig.axis = axis;
+    if (outlineColor) nextFig.outlineColor = outlineColor;
+    newFigures.push(nextFig);
+    markEntity(shape, place.col, place.row, occupied);
+  });
+
+  cfg.blocks = newBlocks;
+  cfg.figures = newFigures;
+}
+
+function figureFitsAnyWallByColor(fig, cfg, colorKey) {
+  if (!colorKey) return false;
+  const b = shapeBounds(fig.shape);
+  return (cfg.walls || []).some((w) => {
+    if (w.color !== colorKey) return false;
+    const cells = Math.max(1, parseInt(w.cells, 10) || 3);
+    return (w.dir === 'top' || w.dir === 'bottom')
+      ? (b.maxC + 1 <= cells)
+      : (b.maxR + 1 <= cells);
+  });
+}
+
+function figureFitsWallBySize(fig, wall) {
+  const b = shapeBounds(fig.shape);
+  const cells = Math.max(1, parseInt(wall.cells, 10) || 3);
+  return (wall.dir === 'top' || wall.dir === 'bottom')
+    ? (b.maxC + 1 <= cells)
+    : (b.maxR + 1 <= cells);
+}
+
+function wallCanBeUsedFromAnchor(fig, wall, anchor, cfg) {
+  const b = shapeBounds(fig.shape);
+  const start = (wall.dir === 'top' || wall.dir === 'bottom')
+    ? (parseInt(wall.col, 10) || 0)
+    : (parseInt(wall.row, 10) || 0);
+  const cells = Math.max(1, parseInt(wall.cells, 10) || 3);
+  const end = start + cells - 1;
+
+  if (wall.dir === 'top') {
+    if (anchor.row !== 0) return false;
+    return anchor.col >= start && (anchor.col + b.maxC) <= end;
+  }
+  if (wall.dir === 'bottom') {
+    if (anchor.row !== cfg.rows - b.maxR - 1) return false;
+    return anchor.col >= start && (anchor.col + b.maxC) <= end;
+  }
+  if (wall.dir === 'left') {
+    if (anchor.col !== 0) return false;
+    return anchor.row >= start && (anchor.row + b.maxR) <= end;
+  }
+  if (wall.dir === 'right') {
+    if (anchor.col !== cfg.cols - b.maxC - 1) return false;
+    return anchor.row >= start && (anchor.row + b.maxR) <= end;
+  }
+  return false;
+}
+
+function figureHasReachableWallForColor(cfg, figures, idx, colorKey) {
+  if (!colorKey) return false;
+  const fig = figures[idx];
+  const anchors = simReachableAnchors(cfg, figures, idx);
+  if (!anchors.length) return false;
+  return (cfg.walls || []).some((w) => (
+    w.color === colorKey &&
+    figureFitsWallBySize(fig, w) &&
+    anchors.some((a) => wallCanBeUsedFromAnchor(fig, w, a, cfg))
+  ));
+}
+
+function wallScoreForFigures(wall, cfg, figures) {
+  let score = 0;
+  figures.forEach((fig, idx) => {
+    const fillKey = colorToWallKey(fig.color);
+    const outlineKey = fig.outlineColor ? colorToWallKey(fig.outlineColor) : null;
+    if (wall.color !== fillKey && wall.color !== outlineKey) return;
+    if (!figureFitsWallBySize(fig, wall)) return;
+    const anchors = simReachableAnchors(cfg, figures, idx);
+    if (!anchors.length) return;
+    if (anchors.some((a) => wallCanBeUsedFromAnchor(fig, wall, a, cfg))) {
+      score += wall.color === fillKey ? 3 : 2;
+    }
+  });
+  return score;
+}
+
+function rebalanceWalls(cfg) {
+  const normalized = (cfg.walls || []).map((w) => normalizeWallPlacement(cfg, w));
+  const unique = [];
+  normalized.forEach((w) => {
+    if (unique.some((p) => wallsOverlapSameSide(p, w))) return;
+    unique.push(w);
+  });
+  if (!unique.length) {
+    cfg.walls = [normalizeWallPlacement(cfg, { color: 'cyan', dir: 'top', col: 0, cells: Math.min(3, cfg.cols) })];
+    return;
+  }
+
+  const figures = cfg.figures || [];
+  const requiredColors = new Set();
+  figures.forEach((f) => {
+    const fillKey = colorToWallKey(f.color);
+    if (fillKey) requiredColors.add(fillKey);
+    if (f.outlineColor) {
+      const outlineKey = colorToWallKey(f.outlineColor);
+      if (outlineKey) requiredColors.add(outlineKey);
+    }
+  });
+
+  const scored = unique
+    .map((w, idx) => ({
+      idx,
+      w,
+      score: wallScoreForFigures(w, cfg, figures),
+    }))
+    .sort((a, b) => b.score - a.score || b.w.cells - a.w.cells);
+
+  const minWalls = Math.max(1, requiredColors.size);
+  const maxWalls = Math.max(minWalls, Math.min(4, minWalls + 1));
+  const selected = [];
+  const used = new Set();
+
+  requiredColors.forEach((colorKey) => {
+    const best = scored.find((s) => s.w.color === colorKey && !used.has(s.idx));
+    if (!best) return;
+    used.add(best.idx);
+    selected.push(best.w);
+  });
+
+  for (const item of scored) {
+    if (selected.length >= maxWalls) break;
+    if (used.has(item.idx)) continue;
+    used.add(item.idx);
+    selected.push(item.w);
+  }
+
+  cfg.walls = (selected.length ? selected : [scored[0].w]).slice(0, maxWalls);
+}
+
+function validateVariant(cfg) {
+  if (!cfg.figures || !cfg.figures.length) return false;
+  if (!cfg.walls || !cfg.walls.length) return false;
+  const wallColors = new Set((cfg.walls || []).map(w => w.color));
+  const figures = cfg.figures || [];
+  for (let i = 0; i < figures.length; i++) {
+    const f = figures[i];
+    const ck = colorToWallKey(f.color);
+    if (!ck || !wallColors.has(ck)) return false;
+    if (!figureFitsAnyWallByColor(f, cfg, ck)) return false;
+    if (!figureHasReachableWallForColor(cfg, figures, i, ck)) return false;
+    if (f.outlineColor) {
+      const ok = colorToWallKey(f.outlineColor);
+      if (!ok || !wallColors.has(ok)) return false;
+      if (!figureFitsAnyWallByColor(f, cfg, ok)) return false;
+      if (!figureHasReachableWallForColor(cfg, figures, i, ok)) return false;
+    }
+  }
+  return true;
+}
+
+function scrambleLevelLayout(baseCfg, steps) {
+  const cfg = normalizeLevelConfig(baseCfg);
+  const figures = cloneJson(cfg.figures || []);
+  if (!figures.length) return { cfg, movedSteps: 0, guaranteed: true };
+  let moved = 0;
+  let guards = 0;
+  const guardMax = Math.max(300, steps * figures.length * 10);
+  while (moved < steps && guards < guardMax) {
+    guards++;
+    const idx = Math.floor(Math.random() * figures.length);
+    const reachable = simReachableAnchors(cfg, figures, idx);
+    const candidates = reachable.filter(p => p.col !== figures[idx].col || p.row !== figures[idx].row);
+    if (!candidates.length) continue;
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    figures[idx].col = pick.col;
+    figures[idx].row = pick.row;
+    moved++;
+  }
+  cfg.figures = figures;
+  return { cfg, movedSteps: moved, guaranteed: moved > 0 };
+}
+
+function mutateLevelVariant(baseCfg, opts) {
+  const maxAttempts = 60;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const cfg = normalizeLevelConfig(baseCfg);
+    if (opts.mutateGrid) mutateGrid(cfg);
+    if (opts.mutateWalls) mutateWalls(cfg);
+    sanitizeWalls(cfg);
+    if (opts.mutateBlocks || opts.mutateFigures) mutateBlocksAndFigures(cfg, opts);
+    if (opts.mutateWalls) {
+      rebalanceWalls(cfg);
+      ensureRequiredWallColors(cfg);
+    }
+
+    if (opts.timeJitter) {
+      const factor = 0.75 + Math.random() * 0.5;
+      cfg.time = Math.max(1, Math.round(cfg.time * factor));
+    }
+
+    if (opts.colorRemap) {
+      const usedWallColors = [...new Set(cfg.walls.map(w => w.color).filter(Boolean))];
+      if (usedWallColors.length > 1) {
+        const pool = shuffleArray(Object.keys(WALL_CSS));
+        const picked = pool.slice(0, usedWallColors.length);
+        const remap = {};
+        usedWallColors.forEach((oldColor, i) => { remap[oldColor] = picked[i]; });
+        cfg.walls.forEach(w => { if (remap[w.color]) w.color = remap[w.color]; });
+        cfg.figures.forEach(f => {
+          const wk = colorToWallKey(f.color);
+          if (wk && remap[wk]) f.color = WALL_CSS[remap[wk]];
+          if (f.outlineColor) {
+            const okw = colorToWallKey(f.outlineColor);
+            if (okw && remap[okw]) f.outlineColor = WALL_CSS[remap[okw]];
+          }
+        });
+      }
+    }
+
+    if (validateVariant(cfg)) return cfg;
+  }
+  return normalizeLevelConfig(baseCfg);
+}
+
+function currentStateToLevelCfg() {
+  return normalizeLevelConfig({
+    cols: state.cols,
+    rows: state.rows,
+    time: state.time,
+    walls: state.walls,
+    figures: state.figures,
+    blocks: state.blocks,
+  });
+}
+
+function describeLevel(cfg) {
+  return `${cfg.cols}x${cfg.rows} | fig:${(cfg.figures || []).length} wall:${(cfg.walls || []).length} block:${(cfg.blocks || []).length} | ${cfg.time}s`;
+}
+
+function renderCampaignList() {
+  const el = document.getElementById('campaign-list');
+  el.innerHTML = '';
+  campaignLevels.forEach((item, idx) => {
+    const d = document.createElement('div');
+    d.className = 'camp-item' + (idx === selectedCampaignIdx ? ' sel' : '');
+    const source = item.source ? ` · ${item.source}` : '';
+    d.innerHTML = `
+      <div class="camp-title">#${idx + 1}${source}</div>
+      <div class="camp-meta">${describeLevel(item.cfg)}</div>
+      <div class="camp-actions">
+        <button class="btn sm" onclick="selectCampaignLevel(${idx});return false;">Открыть</button>
+        <button class="btn sm danger" onclick="removeCampaignLevel(${idx});return false;">Удалить</button>
+      </div>
+    `;
+    d.onclick = () => selectCampaignLevel(idx);
+    el.appendChild(d);
+  });
+}
+
+function selectCampaignLevel(idx) {
+  if (!campaignLevels[idx]) return;
+  selectedCampaignIdx = idx;
+  applyLoadedLevel(campaignLevels[idx].cfg, idx + 1);
+  renderCampaignList();
+}
+
+function removeCampaignLevel(idx) {
+  if (!campaignLevels[idx]) return;
+  campaignLevels.splice(idx, 1);
+  if (selectedCampaignIdx === idx) selectedCampaignIdx = -1;
+  else if (selectedCampaignIdx > idx) selectedCampaignIdx -= 1;
+  if (selectedCampaignIdx >= campaignLevels.length) selectedCampaignIdx = campaignLevels.length - 1;
+  renderCampaignList();
+}
+
+function importAllPresetToCampaign() {
+  campaignLevels = presetLevels.map((item) => ({
+    source: item.label,
+    cfg: normalizeLevelConfig(item.cfg),
+  }));
+  selectedCampaignIdx = -1;
+  renderCampaignList();
+}
+
+function generateCampaignVariants() {
+  const sourceMode = document.getElementById('gen-source').value || 'current';
+  const perLevel = Math.max(1, Math.min(100, parseInt(document.getElementById('gen-per-level').value, 10) || 10));
+  const opts = {
+    colorRemap: document.getElementById('gen-color-remap').checked,
+    timeJitter: document.getElementById('gen-time-jitter').checked,
+    layoutScramble: document.getElementById('gen-layout-scramble').checked,
+    scrambleSteps: Math.max(2, Math.min(120, parseInt(document.getElementById('gen-scramble-steps').value, 10) || 14)),
+    mutateWalls: document.getElementById('gen-mutate-walls').checked,
+    mutateBlocks: document.getElementById('gen-mutate-blocks').checked,
+    mutateFigures: document.getElementById('gen-mutate-figures').checked,
+    mutateGrid: document.getElementById('gen-mutate-grid').checked,
+  };
+  const baseLevels = sourceMode === 'all'
+    ? presetLevels.map((item) => ({ label: item.label, cfg: item.cfg }))
+    : [{ label: 'Current', cfg: currentStateToLevelCfg() }];
+
+  if (!baseLevels.length) {
+    alert('Нет уровней для генерации. Нажмите "Обновить список уровней".');
+    return;
+  }
+
+  const generated = [];
+  let generatedLayouts = 0;
+  baseLevels.forEach((item) => {
+    for (let i = 0; i < perLevel; i++) {
+      let cfg = item.cfg;
+      let suffix = '';
+      if (opts.layoutScramble) {
+        const layout = scrambleLevelLayout(cfg, opts.scrambleSteps);
+        cfg = layout.cfg;
+        if (layout.guaranteed) {
+          generatedLayouts++;
+          suffix = ` · layout:${layout.movedSteps}`;
+        }
+      }
+      generated.push({
+        source: `${item.label} · gen ${i + 1}${suffix}`,
+        cfg: mutateLevelVariant(cfg, opts),
+      });
+    }
+  });
+  campaignLevels = generated;
+  selectedCampaignIdx = generated.length ? 0 : -1;
+  renderCampaignList();
+  if (generated.length) selectCampaignLevel(0);
+  if (opts.layoutScramble && generatedLayouts === 0) {
+    alert('Не получилось переставить фигуры. Уменьшите шаги или проверьте плотность уровня.');
+  }
+}
+
+function addCurrentLevelToCampaign() {
+  campaignLevels.push({
+    source: 'Текущий',
+    cfg: currentStateToLevelCfg(),
+  });
+  selectedCampaignIdx = campaignLevels.length - 1;
+  renderCampaignList();
+}
+
+function clearCampaignLevels() {
+  if (!campaignLevels.length) return;
+  if (!confirm('Очистить список уровней конструктора?')) return;
+  campaignLevels = [];
+  selectedCampaignIdx = -1;
+  renderCampaignList();
+}
+
+function levelConfigToJs(cfg, num) {
+  const c = normalizeLevelConfig(cfg);
+  const ind = '  ';
+  const walls = c.walls.map(w => {
+    const pos = (w.dir === 'top' || w.dir === 'bottom')
+      ? (w.col !== undefined ? `, col: ${w.col}` : '')
+      : (w.row !== undefined ? `, row: ${w.row}` : '');
+    const cells = w.cells !== undefined ? `, cells: ${w.cells}` : '';
+    return `${ind}  { color: '${w.color}', dir: '${w.dir}'${pos}${cells} },`;
+  }).join('\n');
+  const blocks = c.blocks.map(b =>
+    `${ind}  { shape: '${b.shape}', col: ${b.col}, row: ${b.row} },`
+  ).join('\n');
+  const figs = c.figures.map(f => {
+    const outline = f.outlineColor ? `, outlineColor: '${f.outlineColor}'` : '';
+    const ax = f.axis ? `, axis: '${f.axis}'` : '';
+    return `${ind}  { shape: '${f.shape}', color: '${f.color}', col: ${f.col}, row: ${f.row}${outline}${ax} },`;
+  }).join('\n');
+  const blocksSection = blocks ? `  blocks: [\n${blocks}\n  ],\n` : '';
+  return `// ── Уровень ${num} ──────────────────────────────────────────────────
+LEVELS.push({
+  cols: ${c.cols}, rows: ${c.rows},
+  time: ${c.time},
+  walls: [
+${walls}
+  ],
+${blocksSection}  figures: [
+${figs}
+  ],
+});`;
+}
+
+function buildCampaignCode(levels, options) {
+  const opts = options || {};
+  const chunks = [];
+  if (opts.reset) {
+    chunks.push('// Сброс текущего пула уровней');
+    chunks.push('LEVELS.length = 0;');
+    chunks.push('');
+  }
+  levels.forEach((item, idx) => {
+    chunks.push(levelConfigToJs(item.cfg || item, idx + 1));
+    chunks.push('');
+  });
+  return chunks.join('\n').trim() + '\n';
+}
+
+function downloadTextFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime || 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function downloadCampaignAppend() {
+  if (!campaignLevels.length) {
+    alert('Список конструктора пуст');
+    return;
+  }
+  downloadTextFile(buildCampaignCode(campaignLevels, { reset: false }), 'levels.generated.js', 'text/javascript');
+}
+
+function downloadCampaignOverride() {
+  if (!campaignLevels.length) {
+    alert('Список конструктора пуст');
+    return;
+  }
+  downloadTextFile(buildCampaignCode(campaignLevels, { reset: true }), 'levels.override.js', 'text/javascript');
+}
+
+async function refreshPresetLevels() {
+  const sel = document.getElementById('preset-levels');
+  sel.innerHTML = '<option>Загрузка списка…</option>';
+  presetLevels = [];
+
+  async function loadByScriptProbe() {
+    const loaded = [];
+    const originalLevelsRef = window.LEVELS;
+    window.LEVELS = [];
+
+    function loadScript(path) {
+      return new Promise((resolve) => {
+        const s = document.createElement('script');
+        s.src = path + '?t=' + Date.now() + '-' + Math.floor(Math.random() * 100000);
+        s.onload = () => { s.remove(); resolve(true); };
+        s.onerror = () => { s.remove(); resolve(false); };
+        document.head.appendChild(s);
+      });
+    }
+
+    // Пробуем диапазон с запасом; пропуски поддерживаются.
+    for (let num = 1; num <= 200; num++) {
+      const path = 'levels/level' + num + '.js';
+      const before = window.LEVELS.length;
+      const ok = await loadScript(path);
+      if (!ok) continue;
+      const after = window.LEVELS.length;
+      if (after <= before) continue;
+      for (let i = before; i < after; i++) {
+        const cfg = window.LEVELS[i];
+        if (!cfg || typeof cfg !== 'object') continue;
+        loaded.push({
+          num,
+          path,
+          cfg: cloneJson(cfg),
+          label: i === before ? ('Level ' + num) : ('Level ' + num + ' [' + (i - before + 1) + ']')
+        });
+      }
+    }
+
+    // Возвращаем исходное значение LEVELS, чтобы не засорять глобалы редактора.
+    if (originalLevelsRef === undefined) delete window.LEVELS;
+    else window.LEVELS = originalLevelsRef;
+    return loaded;
+  }
+
+  try {
+    const indexRes = await fetch('index.html');
+    const indexText = await indexRes.text();
+    const all = [...indexText.matchAll(/levels\/level(\d+)\.js/g)];
+    const unique = new Map();
+    all.forEach(m => unique.set(m[1], 'levels/level' + m[1] + '.js'));
+    const ordered = [...unique.entries()].sort((a, b) => parseInt(a[0], 10) - parseInt(b[0], 10));
+    for (const [num, path] of ordered) {
+      const res = await fetch(path);
+      const text = await res.text();
+      const levels = parseLevelsFromText(text, path);
+      levels.forEach((cfg, idx) => {
+        presetLevels.push({
+          num: parseInt(num, 10),
+          path,
+          cfg,
+          label: idx === 0 ? ('Level ' + num) : ('Level ' + num + ' [' + (idx + 1) + ']')
+        });
+      });
+    }
+  } catch (e) {
+    console.warn('Fetch-режим загрузки уровней недоступен, переключаюсь на script-probe.', e);
+    try {
+      presetLevels = await loadByScriptProbe();
+    } catch (e2) {
+      sel.innerHTML = '<option>Ошибка чтения уровней</option>';
+      console.error(e2);
+      return;
+    }
+  }
+
+  sel.innerHTML = '';
+  if (!presetLevels.length) {
+    sel.innerHTML = '<option>Нет доступных уровней</option>';
+    return;
+  }
+  presetLevels.forEach((it, i) => {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = it.label;
+    sel.appendChild(opt);
+  });
+}
+
+function loadSelectedPresetLevel() {
+  const sel = document.getElementById('preset-levels');
+  const idx = parseInt(sel.value, 10);
+  if (!Number.isFinite(idx) || !presetLevels[idx]) return;
+  const item = presetLevels[idx];
+  applyLoadedLevel(item.cfg, item.num);
+}
+
+async function onLevelFilePicked(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const levels = parseLevelsFromText(text, file.name);
+    if (!levels.length) throw new Error('Файл не содержит уровней');
+    const m = file.name.match(/level(\d+)/i);
+    const num = m ? parseInt(m[1], 10) : null;
+    applyLoadedLevel(levels[0], num);
+    if (levels.length > 1) {
+      alert('В файле несколько уровней. Загружен первый.');
+    }
+  } catch (err) {
+    alert(err.message || 'Ошибка чтения файла уровня');
+  } finally {
+    e.target.value = '';
+  }
+}
+
+// ── Hover preview element (persistent, survives grid rebuilds) ─────────────
+const hoverPreview = document.createElement('div');
+hoverPreview.style.cssText = 'position:absolute;z-index:10;pointer-events:none;display:none;transition:none';
+
+// ── Grid-level events (set up once) ────────────────────────────────────────
+(function setupGridEvents() {
+  const grid = document.getElementById('grid');
+
+  grid.addEventListener('mousemove', function(e) {
+    const rect = grid.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const c = Math.min(Math.max(0, Math.floor(x / (CELL + GAP))), state.cols - 1);
+    const r = Math.min(Math.max(0, Math.floor(y / (CELL + GAP))), state.rows - 1);
+    if (c !== hoverCol || r !== hoverRow) {
+      hoverCol = c; hoverRow = r;
+      updateHoverPreview();
+    }
+  });
+
+  grid.addEventListener('mouseleave', function() {
+    hoverCol = -1; hoverRow = -1;
+    hoverPreview.style.display = 'none';
+  });
+
+  grid.addEventListener('click', function() {
+    if (hoverCol < 0 || hoverRow < 0) return;
+    if (placeMode === 'block') placeBlock(hoverCol, hoverRow);
+    else placeFigure(hoverCol, hoverRow);
+  });
+
+  grid.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    const rect = grid.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const c = Math.floor(x / (CELL + GAP));
+    const r = Math.floor(y / (CELL + GAP));
+    const maps = buildOccupiedMaps();
+    const fi = maps.figures.get(`${c},${r}`);
+    if (fi !== undefined) { removeFigure(fi); return; }
+    const bi = maps.blocks.get(`${c},${r}`);
+    if (bi !== undefined) removeBlock(bi);
+  });
+})();
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function buildOccupiedMaps() {
+  const figures = new Map();
+  const blocks = new Map();
+  const occupied = new Set();
+  state.figures.forEach((fig, fi) => {
+    SHAPES[fig.shape].forEach(([dc, dr]) => {
+      const key = `${fig.col + dc},${fig.row + dr}`;
+      figures.set(key, fi);
+      occupied.add(key);
+    });
+  });
+  state.blocks.forEach((b, bi) => {
+    SHAPES[b.shape].forEach(([dc, dr]) => {
+      const key = `${b.col + dc},${b.row + dr}`;
+      blocks.set(key, bi);
+      occupied.add(key);
+    });
+  });
+  return { figures, blocks, occupied };
+}
+
+function getPlacementPos(shape, col, row) {
+  const cells = SHAPES[shape];
+  const maxC = Math.max(...cells.map(c => c[0]));
+  const maxR = Math.max(...cells.map(c => c[1]));
+  return {
+    shape, cells,
+    ac: Math.min(col, state.cols - 1 - maxC),
+    ar: Math.min(row, state.rows - 1 - maxR),
+    maxC, maxR,
+  };
+}
+
+function outlinePreviewFilter(color) {
+  return [
+    `drop-shadow(4px 0 0 ${color})`,
+    `drop-shadow(-4px 0 0 ${color})`,
+    `drop-shadow(0 4px 0 ${color})`,
+    `drop-shadow(0 -4px 0 ${color})`,
+    `drop-shadow(3px 3px 0 ${color})`,
+    `drop-shadow(-3px 3px 0 ${color})`,
+    `drop-shadow(3px -3px 0 ${color})`,
+    `drop-shadow(-3px -3px 0 ${color})`,
+  ].join(' ');
+}
+
+function updateHoverPreview() {
+  const grid = document.getElementById('grid');
+  if (!hoverPreview.parentNode) grid.appendChild(hoverPreview);
+  if (hoverCol < 0 || hoverRow < 0) { hoverPreview.style.display = 'none'; return; }
+
+  const shape = placeMode === 'block'
+    ? document.getElementById('sel-block-shape').value
+    : document.getElementById('sel-shape').value;
+  const { cells, ac, ar, maxC, maxR } = getPlacementPos(shape, hoverCol, hoverRow);
+  const W = maxC * (CELL + GAP) + CELL;
+  const H = maxR * (CELL + GAP) + CELL;
+  const maps = buildOccupiedMaps();
+  const valid = cells.every(([dc, dr]) => !maps.occupied.has(`${ac + dc},${ar + dr}`));
+
+  hoverPreview.style.left   = `${ac * (CELL + GAP)}px`;
+  hoverPreview.style.top    = `${ar * (CELL + GAP)}px`;
+  hoverPreview.style.width  = `${W}px`;
+  hoverPreview.style.height = `${H}px`;
+  hoverPreview.innerHTML = '';
+  const okBg = placeMode === 'block' ? 'rgba(120,130,145,0.45)' : `${selColor}55`;
+  const badBg = 'rgba(255,60,60,0.24)';
+  const okBorder = 'rgba(255,255,255,0.58)';
+  const badBorder = 'rgba(255,80,80,0.8)';
+  cells.forEach(([dc, dr]) => {
+    const d = document.createElement('div');
+    d.className = 'hv-cell';
+    d.style.left = `${dc * (CELL + GAP)}px`;
+    d.style.top = `${dr * (CELL + GAP)}px`;
+    d.style.background = valid ? okBg : badBg;
+    d.style.borderColor = valid ? okBorder : badBorder;
+    if (placeMode === 'figure' && selOutlineEnabled) {
+      d.style.boxShadow = `0 0 0 3px ${selOutlineColor} inset, 0 0 10px ${selOutlineColor}66`;
+    }
+    hoverPreview.appendChild(d);
+  });
+  hoverPreview.style.display = 'block';
+}
+
+// ── Grid ───────────────────────────────────────────────────────────────────
+function applyGrid() {
+  state.cols = parseInt(document.getElementById('in-cols').value) || 6;
+  state.rows = parseInt(document.getElementById('in-rows').value) || 7;
+  state.time = Math.max(1, parseInt(document.getElementById('in-time').value, 10) || 50);
+  renderGrid();
+  generateCode();
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.style.gridTemplateColumns = `repeat(${state.cols}, ${CELL}px)`;
+  grid.style.gridTemplateRows    = `repeat(${state.rows}, ${CELL}px)`;
+  grid.innerHTML = '';
+
+  // Static cells (no individual event listeners)
+  for (let r = 0; r < state.rows; r++) {
+    for (let c = 0; c < state.cols; c++) {
+      const div = document.createElement('div');
+      div.className = 'gc';
+      grid.appendChild(div);
+    }
+  }
+
+  // Static gray blockers
+  state.blocks.forEach((b) => {
+    const cells = SHAPES[b.shape];
+    const maxC = Math.max(...cells.map(c => c[0]));
+    const maxR = Math.max(...cells.map(c => c[1]));
+    const W = maxC * (CELL + GAP) + CELL;
+    const H = maxR * (CELL + GAP) + CELL;
+    const ov = document.createElement('div');
+    ov.className = 'bov';
+    ov.style.cssText = `left:${b.col*(CELL+GAP)}px;top:${b.row*(CELL+GAP)}px;width:${W}px;height:${H}px`;
+    cells.forEach(([dc, dr]) => {
+      const cell = document.createElement('div');
+      cell.className = 'bov-cell';
+      cell.style.left = `${dc*(CELL+GAP)}px`;
+      cell.style.top = `${dr*(CELL+GAP)}px`;
+      ov.appendChild(cell);
+    });
+    grid.appendChild(ov);
+  });
+
+  // Figure overlays — pointer-events:none so clicks fall through to grid
+  state.figures.forEach((fig) => {
+    const cells = SHAPES[fig.shape];
+    const maxC = Math.max(...cells.map(c => c[0]));
+    const maxR = Math.max(...cells.map(c => c[1]));
+    const W = maxC * (CELL + GAP) + CELL;
+    const H = maxR * (CELL + GAP) + CELL;
+    const ov = document.createElement('div');
+    ov.className = 'fov';
+    ov.style.cssText = `left:${fig.col*(CELL+GAP)}px;top:${fig.row*(CELL+GAP)}px;width:${W}px;height:${H}px;pointer-events:none`;
+    if (fig.outlineColor) ov.style.filter = outlinePreviewFilter(fig.outlineColor);
+    cells.forEach(([dc, dr]) => {
+      const cell = document.createElement('div');
+      cell.className = 'fov-cell';
+      cell.style.left = `${dc*(CELL+GAP)}px`;
+      cell.style.top = `${dr*(CELL+GAP)}px`;
+      cell.style.background = fig.color;
+      ov.appendChild(cell);
+    });
+    if (fig.axis) {
+      const ax = document.createElement('span');
+      ax.className = 'fax';
+      ax.textContent = fig.axis === 'x' ? '↔' : '↕';
+      ov.appendChild(ax);
+    }
+    grid.appendChild(ov);
+  });
+
+  // Wall bands — pointer-events:none
+  state.walls.forEach(w => {
+    const css = WALL_CSS[w.color] || '#888';
+    const cells = w.cells || 3;
+    const BAND = 6;
+    const band = document.createElement('div');
+    band.className = 'wband';
+    const horiz = w.dir === 'top' || w.dir === 'bottom';
+    if (horiz) {
+      const col = w.col !== undefined ? w.col : 0;
+      const len = cells * (CELL + GAP) - GAP;
+      band.style.cssText = `left:${col*(CELL+GAP)}px;width:${len}px;height:${BAND}px;background:${css};${w.dir==='top'?'top:-9px':'bottom:-9px'}`;
+      band.textContent = w.dir === 'top' ? '▲' : '▼';
+    } else {
+      const row = w.row !== undefined ? w.row : 0;
+      const len = cells * (CELL + GAP) - GAP;
+      band.style.cssText = `top:${row*(CELL+GAP)}px;height:${len}px;width:${BAND}px;background:${css};${w.dir==='left'?'left:-9px':'right:-9px'}`;
+      band.textContent = w.dir === 'left' ? '◀' : '▶';
+    }
+    grid.appendChild(band);
+  });
+
+  // Re-attach hover preview (was cleared by innerHTML='')
+  grid.appendChild(hoverPreview);
+  updateHoverPreview();
+
+  document.getElementById('fig-count').textContent = state.figures.length;
+  document.getElementById('block-count').textContent = state.blocks.length;
+}
+
+// ── Place / Remove ─────────────────────────────────────────────────────────
+function placeFigure(col, row) {
+  const shape = document.getElementById('sel-shape').value;
+  const { cells, ac, ar } = getPlacementPos(shape, col, row);
+  const maps = buildOccupiedMaps();
+  if (!cells.every(([dc, dr]) => !maps.occupied.has(`${ac + dc},${ar + dr}`))) return;
+  const fig = { shape, color: selColor, col: ac, row: ar };
+  if (selOutlineEnabled) fig.outlineColor = selOutlineColor;
+  if (selAxis) fig.axis = selAxis;
+  state.figures.push(fig);
+  renderGrid();
+  generateCode();
+}
+
+function placeBlock(col, row) {
+  const shape = document.getElementById('sel-block-shape').value;
+  const { cells, ac, ar } = getPlacementPos(shape, col, row);
+  const maps = buildOccupiedMaps();
+  if (!cells.every(([dc, dr]) => !maps.occupied.has(`${ac + dc},${ar + dr}`))) return;
+  state.blocks.push({ shape, col: ac, row: ar });
+  updateBlockList();
+  renderGrid();
+  generateCode();
+}
+
+function removeFigure(fi) {
+  state.figures.splice(fi, 1);
+  renderGrid();
+  generateCode();
+}
+
+function clearFigures() {
+  if (!confirm('Удалить все фигуры?')) return;
+  state.figures = [];
+  renderGrid();
+  generateCode();
+}
+
+function removeBlock(i) {
+  state.blocks.splice(i, 1);
+  updateBlockList();
+  renderGrid();
+  generateCode();
+}
+
+function clearBlocks() {
+  if (!confirm('Удалить все блоки?')) return;
+  state.blocks = [];
+  updateBlockList();
+  renderGrid();
+  generateCode();
+}
+
+// ── Walls ──────────────────────────────────────────────────────────────────
+function addWall() {
+  const dir   = document.getElementById('w-dir').value;
+  const color = document.getElementById('w-color').value;
+  const start = parseInt(document.getElementById('w-start').value) || 0;
+  const cells = parseInt(document.getElementById('w-cells').value) || 3;
+  const wall  = { color, dir, cells };
+  if (dir === 'top' || dir === 'bottom') wall.col = start;
+  else wall.row = start;
+  state.walls.push(wall);
+  updateWallList();
+  renderGrid();
+  generateCode();
+}
+
+function removeWall(i) {
+  state.walls.splice(i, 1);
+  updateWallList();
+  renderGrid();
+  generateCode();
+}
+
+function updateWallList() {
+  const el = document.getElementById('wall-list');
+  el.innerHTML = '';
+  state.walls.forEach((w, i) => {
+    const pos = (w.dir==='top'||w.dir==='bottom') ? `col:${w.col}` : `row:${w.row}`;
+    const item = document.createElement('div');
+    item.className = 'wall-item';
+    item.innerHTML = `
+      <span class="wdot" style="background:${WALL_CSS[w.color]||'#888'}"></span>
+      <span>${w.color} ${w.dir} ${pos} ×${w.cells}</span>
+      <span class="wdel" onclick="removeWall(${i})">×</span>
+    `;
+    el.appendChild(item);
+  });
+}
+
+function updateBlockList() {
+  const el = document.getElementById('block-list');
+  el.innerHTML = '';
+  state.blocks.forEach((b, i) => {
+    const item = document.createElement('div');
+    item.className = 'wall-item';
+    item.innerHTML = `
+      <span class="wdot" style="background:#6c7888"></span>
+      <span>${b.shape} col:${b.col} row:${b.row}</span>
+      <span class="wdel" onclick="removeBlock(${i})">×</span>
+    `;
+    el.appendChild(item);
+  });
+}
+
+// ── Axis ───────────────────────────────────────────────────────────────────
+function setAxis(v) {
+  selAxis = v;
+  document.getElementById('ax-none').classList.toggle('active', v === null);
+  document.getElementById('ax-x').classList.toggle('active', v === 'x');
+  document.getElementById('ax-y').classList.toggle('active', v === 'y');
+}
+
+function setPlaceMode(mode) {
+  placeMode = mode === 'block' ? 'block' : 'figure';
+  document.getElementById('mode-figure').classList.toggle('active', placeMode === 'figure');
+  document.getElementById('mode-block').classList.toggle('active', placeMode === 'block');
+  updateHoverPreview();
+}
+
+// ── Code generation ────────────────────────────────────────────────────────
+function generateCode() {
+  const num = document.getElementById('level-num').value || 'N';
+  state.time = Math.max(1, parseInt(document.getElementById('in-time').value, 10) || state.time || 50);
+  document.getElementById('code-out').value = levelConfigToJs(currentStateToLevelCfg(), num);
+}
+
+document.getElementById('level-num').addEventListener('input', generateCode);
+document.getElementById('in-time').addEventListener('input', generateCode);
+
+function copyCode() {
+  const ta = document.getElementById('code-out');
+  ta.select();
+  document.execCommand('copy');
+  const ok = document.getElementById('copy-ok');
+  ok.style.display = 'inline';
+  setTimeout(() => { ok.style.display = 'none'; }, 1800);
+}
+
+function downloadLevel() {
+  const num  = document.getElementById('level-num').value || 'N';
+  const code = document.getElementById('code-out').value;
+  downloadTextFile(code, `level${num}.js`, 'text/javascript');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+syncOutlineInputs();
+boot();
+</script>
+</body>
+</html>

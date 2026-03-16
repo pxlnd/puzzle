@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Puzzle</title>
+  <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+  <div id="hud-top">
+    <button class="icon-btn" id="back-btn" aria-label="Back">←</button>
+    <div id="hud-main">
+      <div id="level-badge" aria-live="polite">
+        <span class="badge-caption">Level</span>
+        <span class="badge-value" id="level-value">1</span>
+      </div>
+      <div id="time-panel" aria-live="polite">
+        <div id="time-caption">Time</div>
+        <div id="time-value">03:30</div>
+      </div>
+      <button class="icon-btn icon-btn-restart" id="restart-btn" aria-label="Restart">↻</button>
+    </div>
+  </div>
+
+  <div id="frame">
+    <div id="scene">
+      <div id="board"></div>
+    </div>
+  </div>
+
+  <!-- Soft currency panel -->
+  <div id="soft-currency">
+    <img src="coin.png" class="sc-coin" alt="">
+    <div class="sc-panel">
+      <span id="sc-value">50</span>
+    </div>
+  </div>
+
+  <!-- Debug level nav (moved to bottom-left) -->
+  <div id="level-nav" aria-label="Level debug switcher">
+    <button class="nav-btn" id="prev-btn">◀</button>
+    <span id="level-label">Lvl 1</span>
+    <button class="nav-btn" id="next-btn">▶</button>
+    <button class="nav-btn" id="editor-btn" title="Level Builder">✎</button>
+  </div>
+
+  <div id="boosters-bar" aria-label="Boosters">
+    <button class="booster-btn" id="booster-freeze" aria-label="Booster locked level 8">
+      <span class="booster-icon">🔒</span>
+      <span class="booster-lvl">Lv.8</span>
+    </button>
+    <button class="booster-btn" id="booster-dynamite" aria-label="Booster locked level 13">
+      <span class="booster-icon">🔒</span>
+      <span class="booster-lvl">Lv.13</span>
+    </button>
+    <button class="booster-btn" id="booster-blackhole" aria-label="Booster locked level 18">
+      <span class="booster-icon">🔒</span>
+      <span class="booster-lvl">Lv.18</span>
+    </button>
+  </div>
+
+  <!-- Fade overlay -->
+  <div id="fade-overlay"></div>
+  <img id="tutorial-hand" src="tutor_hand.png" alt="" />
+  <div id="start-overlay" style="display:none;">
+    <div id="start-card">
+      <h2 id="start-title">Booster Unlocked!</h2>
+      <div id="unlock-figure-wrap">
+        <div id="unlock-burst"></div>
+        <canvas id="unlock-canvas"></canvas>
+        <div id="unlock-fig-arrow">↕</div>
+      </div>
+      <p id="start-subtitle">You have unlocked the <b>Arrow Block!</b></p>
+      <p id="start-desc">Moves only in the given direction!</p>
+      <button class="nav-btn" id="start-btn">CONTINUE</button>
+    </div>
+  </div>
+  <div id="out-time-overlay" style="display:none;" aria-hidden="true">
+    <div id="out-time-modal">
+      <div class="out-time-title">Out of Time!</div>
+      <div class="out-time-placeholder">тут будет отправка на гейм овер скрин</div>
+      <button id="out-time-continue" class="out-time-cta">+60 сек</button>
+    </div>
+  </div>
+
+  <!-- Booster tutorial overlay -->
+  <div id="booster-tutorial" style="display:none;" aria-hidden="true">
+    <div id="booster-spotlight"></div>
+    <button id="booster-tutorial-btn" class="booster-btn">
+      <span class="booster-icon">🔒</span>
+      <span class="booster-lvl">Lv.8</span>
+    </button>
+  </div>
+
+  <!-- Dynamite booster tutorial overlay -->
+  <div id="dynamite-tutorial" style="display:none;" aria-hidden="true">
+    <div id="dynamite-spotlight"></div>
+    <button id="dynamite-tutorial-btn" class="booster-btn">
+      <span class="booster-icon">🔒</span>
+      <span class="booster-lvl">Lv.13</span>
+    </button>
+  </div>
+
+  <!-- Black Hole booster tutorial overlay -->
+  <div id="blackhole-tutorial" style="display:none;" aria-hidden="true">
+    <div id="blackhole-spotlight"></div>
+    <button id="blackhole-tutorial-btn" class="booster-btn">
+      <span class="booster-icon">🔒</span>
+      <span class="booster-lvl">Lv.18</span>
+    </button>
+  </div>
+
+  <script src="js/constants.js"></script>
+  <script src="levels/level1.js"></script>
+  <script src="levels/level2.js"></script>
+  <script src="levels/level3.js"></script>
+  <script src="levels/level4.js"></script>
+  <script src="levels/level5.js"></script>
+  <script src="levels/level6.js"></script>
+  <script src="levels/level7.js"></script>
+  <script src="levels/level8.js"></script>
+  <script src="levels/level9.js"></script>
+  <script src="levels/level10.js"></script>
+  <script src="levels/level11.js"></script>
+  <script src="levels/level12.js"></script>
+  <script src="levels/level13.js"></script>
+  <script src="levels/level14.js"></script>
+  <script src="levels/level15.js"></script>
+  <script src="levels/level16.js"></script>
+  <script src="levels/level17.js"></script>
+  <script src="levels/level18.js"></script>
+  <script src="levels/level19.js"></script>
+  <script src="levels/level20.js"></script>
+  <script src="levels/level21.js"></script>
+  <script src="levels/level22.js"></script>
+  <script src="levels/level23.js"></script>
+  <script src="levels/level24.js"></script>
+  <script src="levels/level25.js"></script>
+  <script src="levels/level26.js"></script>
+  <script src="levels/level27.js"></script>
+  <script src="levels/level28.js"></script>
+  <script src="levels/level29.js"></script>
+  <script src="levels/level30.js"></script>
+  <script src="levels/level31.js"></script>
+  <script src="levels/level32.js"></script>
+  <script src="js/sounds.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

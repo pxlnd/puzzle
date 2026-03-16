@@ -54,6 +54,9 @@ var tutorialHandEl = document.getElementById('tutorial-hand');
 var levelTimerId = null;
 var levelTimerSeconds = 50;
 var defaultLevelTimeSeconds = 50;
+var quitOverlay = document.getElementById('quit-overlay');
+var quitQuitBtn = document.getElementById('quit-quit');
+var quitActive = false;
 var outTimeOverlay = document.getElementById('out-time-overlay');
 var outTimeContinueBtn = document.getElementById('out-time-continue');
 var outTimeActive = false;
@@ -195,6 +198,24 @@ function setOutTimeOverlay(active) {
     if (outTimeActive) return;
     outTimeOverlay.style.display = 'none';
     outTimeOverlay.setAttribute('aria-hidden', 'true');
+  }, 220);
+  sceneEl.style.pointerEvents = '';
+}
+
+function setQuitOverlay(active) {
+  quitActive = active;
+  if (active) {
+    quitOverlay.style.display = 'flex';
+    quitOverlay.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(function() { quitOverlay.style.opacity = '1'; });
+    sceneEl.style.pointerEvents = 'none';
+    return;
+  }
+  quitOverlay.style.opacity = '0';
+  setTimeout(function() {
+    if (quitActive) return;
+    quitOverlay.style.display = 'none';
+    quitOverlay.setAttribute('aria-hidden', 'true');
   }, 220);
   sceneEl.style.pointerEvents = '';
 }
@@ -1863,9 +1884,14 @@ if (editorBtn) {
     window.location.href = 'editor.html';
   });
 }
-
-document.getElementById('back-btn').addEventListener('click', function() {
+document.getElementById('quit-quit').addEventListener('click', function() {
   window.location = "uniwebview://close";
+});
+document.getElementById('quit-close').addEventListener('click', function() {
+  setQuitOverlay(false);
+});
+document.getElementById('back-btn').addEventListener('click', function() {
+  setQuitOverlay(true);
 });
 restartBtn.addEventListener('click', function() {
   restartCurrentLevel();

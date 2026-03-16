@@ -58,7 +58,9 @@ var quitOverlay = document.getElementById('quit-overlay');
 var quitQuitBtn = document.getElementById('quit-quit');
 var quitActive = false;
 var outTimeOverlay = document.getElementById('out-time-overlay');
-var outTimeContinueBtn = document.getElementById('out-time-continue');
+var outTimeRewardBtn = document.getElementById('out-time-reward');
+var outTimeSoftBtn = document.getElementById('out-time-soft');
+var outTimeRestartBtn = document.getElementById('out-time-restart');
 var outTimeActive = false;
 var timeCaptionEl = document.getElementById('time-caption');
 var hudMainEl = document.getElementById('hud-main');
@@ -68,6 +70,9 @@ var freezeActive = false;
 var freezeTimerId = null;
 var freezeSceneOverlay = null;
 var addTimeReward = false;
+var coinsCount = 0;
+var heartsCount = 0;
+var timeOutCoinsCost = 0;
 
 var tutorial = {
   levelIndex: 0,
@@ -1773,7 +1778,7 @@ function setStartGate(active) {
 
 // Вызывается движком когда все фигуры убраны
 window.onLevelComplete = function() {
-  window.location = "uniwebview://complete";
+  window.location = "uniwebview://complete?coins=" + coinsCount.toString() + "&hearts=" + heartsCount.toString();
   transitionToLevel((currentLevel + 1) % LEVELS.length);
 };
 
@@ -1861,6 +1866,29 @@ function rewardResult(value) {
   }
 }
 
+function updateCoinsView() {
+  document.getElementById('sc-value').innerHTML = coinsCount;
+}
+
+function updateHeartsView() {
+  document.getElementById('heart-value').innerHTML = heartsCount;
+}
+
+function setCoins(value) {
+  coinsCount = parseInt(value)
+  updateCoinsView();
+}
+
+function setHearts(value) {
+  heartsCount = parseInt(value)
+  updateHeartsView();
+}
+
+function setTimeOutCoinsCost(value) {
+  timeOutCoinsCost = parseInt(value);
+  document.getElementById('out-time-soft').innerHTML = timeOutCoinsCost;
+}
+
 // ── Nav ───────────────────────────────────────────────────────────────────────
 
 var levelLabel = document.getElementById('level-label');
@@ -1885,7 +1913,7 @@ if (editorBtn) {
   });
 }
 document.getElementById('quit-quit').addEventListener('click', function() {
-  window.location = "uniwebview://close";
+  window.location = "uniwebview://close?coins=" + coinsCount.toString() + "&hearts=" + heartsCount.toString();
 });
 document.getElementById('quit-close').addEventListener('click', function() {
   setQuitOverlay(false);
@@ -1905,9 +1933,26 @@ startBtn.addEventListener('click', function() {
   if (chainDynamiteTut)  setTimeout(showDynamiteTutorial,  startOverlayFadeMs + 60);
   if (chainBlackholeTut) setTimeout(showBlackholeTutorial, startOverlayFadeMs + 60);
 });
-outTimeContinueBtn.addEventListener('click', function() {
+outTimeRewardBtn.addEventListener('click', function() {
   addTimeReward = true;
   window.location = "uniwebview://reward";
+});
+
+outTimeSoftBtn.addEventListener('click', function() {
+  if (coinsCount > timeOutCoinsCost) {
+    coinsCount -= timeOutCoinsCost;
+    updateCoinsView();
+    addBonusTime(60);
+  }
+});
+
+outTimeRestartBtn.addEventListener('click', function() {
+  if (heartsCount > 0) {
+    heartsCount -= 1;
+    updateHeartsView();
+    loadLevel(currentLevel);
+    setOutTimeOverlay(false);
+  }
 });
 
 var boosterTutorialBtn = document.getElementById('booster-tutorial-btn');

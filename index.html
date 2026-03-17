@@ -36,6 +36,13 @@
     </div>
   </div>
 
+  <div id="hearts">
+    <img src="heart.png" class="heart-heart" alt="">
+    <div class="heart-panel">
+      <span id="heart-value">50</span>
+    </div>
+  </div>
+
   <!-- Debug level nav (moved to bottom-left) -->
   <div id="level-nav" aria-label="Level debug switcher">
     <button class="nav-btn" id="prev-btn">◀</button>
@@ -79,7 +86,20 @@
     <div id="out-time-modal">
       <div class="out-time-title">Out of Time!</div>
       <div class="out-time-placeholder">тут будет отправка на гейм овер скрин</div>
-      <button id="out-time-continue" class="out-time-cta">+60 сек</button>
+      <button id="out-time-reward" class="out-time-cta">+60 сек(рв)</button>
+      <button id="out-time-soft" class="out-time-cta"></button>
+      <button id="out-time-restart" class="out-time-cta">Restart</button>
+    </div>
+  </div>
+  <div id="quit-overlay" style="display:none;" aria-hidden="true">
+    <div id="quit-modal">
+      <div class="quit-title">QUIT LEVEL?</div>
+      <div class="quit-panel">
+        <img src="heart_broken.png" class="" width="60%" height="auto">
+        <div class="quit-warning">You will lose a life!</div>
+      </div>
+        <button id="quit-quit" class="quit-quit">QUIT</button>
+      <button id="quit-close" class="quit-close"><img src="btn_close.png" width="56px" height="56px"/></button>
     </div>
   </div>
 

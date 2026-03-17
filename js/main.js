@@ -1256,6 +1256,7 @@ function startDynamiteFigHandAnim(fig) {
 }
 
 function startDynamiteExplosion(fig) {
+  sendBoosterUsedEvent('dynamite');
   var rect = fig.getBoundingClientRect();
   var cx = rect.left + rect.width  / 2;
   var cy = rect.top  + rect.height / 2;
@@ -1600,6 +1601,7 @@ function startBlackholeSelectMode() {
 }
 
 function startBlackholeEffect(fig) {
+  sendBoosterUsedEvent('blackhole');
   if (typeof Sounds !== 'undefined') Sounds.blackhole();
   var rect = fig.getBoundingClientRect();
   var cx = rect.left + rect.width  / 2;
@@ -1687,6 +1689,7 @@ function resetBlackholeState() {
 
 function activateFreezeEffect() {
   if (freezeActive) return;
+  sendBoosterUsedEvent('freeze');
   if (typeof Sounds !== 'undefined') Sounds.freeze();
   document.body.classList.add('frozen');
   var frameEl = document.getElementById('frame');
@@ -1775,6 +1778,10 @@ function setStartGate(active) {
 
 function sendBoosterUnlockEvent(type) {
   window.location = "uniwebview://booster_unlock?type=" + encodeURIComponent(type);
+}
+
+function sendBoosterUsedEvent(type) {
+  window.location = "uniwebview://booster_used?type=" + encodeURIComponent(type);
 }
 
 // Вызывается движком когда все фигуры убраны

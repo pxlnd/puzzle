@@ -810,25 +810,22 @@ startOverlayConfigs[17].draw = drawBlackholeSymbol;
 function updateFreezeDisplay() {
   var btn = document.getElementById('booster-freeze');
   if (!btn || !btn.classList.contains('unlocked')) return;
-  btn.querySelector('.booster-lvl').textContent = String(freezeCharges);
-  if (freezeCharges <= 0) btn.classList.add('depleted');
-  else                    btn.classList.remove('depleted');
+  btn.querySelector('.booster-lvl').textContent = freezeCharges <= 0 ? '+' : String(freezeCharges);
+  btn.classList.remove('depleted');
 }
 
 function updateDynamiteDisplay() {
   var btn = document.getElementById('booster-dynamite');
   if (!btn || !btn.classList.contains('unlocked')) return;
-  btn.querySelector('.booster-lvl').textContent = String(dynamiteCharges);
-  if (dynamiteCharges <= 0) btn.classList.add('depleted');
-  else                      btn.classList.remove('depleted');
+  btn.querySelector('.booster-lvl').textContent = dynamiteCharges <= 0 ? '+' : String(dynamiteCharges);
+  btn.classList.remove('depleted');
 }
 
 function updateBlackholeDisplay() {
   var btn = document.getElementById('booster-blackhole');
   if (!btn || !btn.classList.contains('unlocked')) return;
-  btn.querySelector('.booster-lvl').textContent = String(blackholeCharges);
-  if (blackholeCharges <= 0) btn.classList.add('depleted');
-  else                       btn.classList.remove('depleted');
+  btn.querySelector('.booster-lvl').textContent = blackholeCharges <= 0 ? '+' : String(blackholeCharges);
+  btn.classList.remove('depleted');
 }
 
 function shakeBooster(btn) {

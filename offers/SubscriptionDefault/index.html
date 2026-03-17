@@ -214,7 +214,7 @@ body {
 <div class="container">
 
   <!-- Close button -->
-  <button class="close-btn"><img src="Sprites/close.png" /></button>
+  <button class="close-btn" onclick="closePopup()"><img src="Sprites/close.png" /></button>
 
   <!-- Header -->
   <div class="header">
@@ -278,6 +278,14 @@ body {
   </p>
 
 </div>
+
+<script>
+
+function closePopup(){
+    window.location = "uniwebview://close";
+}
+
+</script>
 
 </body>
 </html>

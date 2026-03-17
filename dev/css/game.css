@@ -1,5 +1,10 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+@font-face {
+  font-family: Fedoka;
+  src: url(../Fredoka-Medium.ttf);
+}
+
 body {
   overflow: hidden;
   width: 100vw;
@@ -442,6 +447,87 @@ body.explosion-shake { animation: screen-shake 0.38s ease; }
     0 6px 10px rgba(0,0,0,0.38);
 }
 
+#quit-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: max(14px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+  background: rgba(15, 20, 39, 0.76);
+  z-index: 99997;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+#quit-modal {
+  width: min(86vw, 350px);
+  border-radius:20px;
+  background:radial-gradient(#6b5cff,#5a43c6);
+  color:white;
+  text-align:center;
+  box-shadow:0 10px 25px rgba(0,0,0,0.3);
+  padding-bottom: 20px;
+  border-color: #362b2b;
+  border-width: 2px;
+  border-style: solid;
+  position: relative;
+}
+
+.quit-close {
+  display: block;
+  background-color: transparent;
+  position: absolute;
+  border: none;
+  top: -24px;
+  right: -24px;
+}
+
+.quit-title {
+  padding:16px;
+  font-size:32px;
+  font-weight:bold;
+  letter-spacing:1px;
+  font-family: Fedoka;
+  text-shadow: 2px 2px 0px #362b2b;
+}
+
+.quit-quit {
+  background:linear-gradient(180deg,#ffc64d,#f0a71e);
+  border:none;
+  padding:14px 30px;
+  border-radius:14px;
+  font-weight:bold;
+  font-size:24px;
+  cursor:pointer;
+  color:#fff;
+  font-family: Fedoka;
+  border-color: #362b2b;
+  border-width: 2px;
+  border-style: solid;
+  text-shadow: 2px 2px 0px #362b2b;
+}
+
+.quit-warning {
+  font-family: Fedoka;
+  font-size:24px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  color:rgba(15, 20, 39, 0.76);
+}
+
+.quit-panel {
+  padding: 20px;
+  background-color: #9e97d6;
+  border-radius: 24px;
+  display: block;
+  width: 80%;
+  margin: auto;
+  margin-bottom: 20px;
+}
+
 /* ── out of time overlay ─────────────────────────────────────────────── */
 #out-time-overlay {
   position: fixed;
@@ -757,6 +843,46 @@ body.explosion-shake { animation: screen-shake 0.38s ease; }
   display: block;
 }
 #sc-add-btn:active { transform: scale(0.92); }
+
+/* ── hearts ─────────────────────────────────────────────── */
+#hearts {
+  position: fixed;
+  top: calc(max(10px, env(safe-area-inset-top)) + 60px + clamp(74px, 11vw, 90px) + 10px);
+  right: clamp(8px, 1.8vw, 14px);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+}
+.heart-heart {
+  width: clamp(40px, 7vw, 52px);
+  height: clamp(40px, 7vw, 52px);
+  position: relative;
+  z-index: 2;
+  margin-right: clamp(-26px, -4.5vw, -20px);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.heart-panel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-image: url('../core_universal_back.png');
+  background-size: 100% 100%;
+  background-color: #f5f5f5;
+  border-radius: 24px;
+  padding: 4px 4px 4px clamp(18px, 3.2vw, 24px);
+  min-width: clamp(88px, 16vw, 112px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.22);
+}
+#heart-value {
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: clamp(16px, 3vw, 22px);
+  font-weight: 900;
+  color: #1a1a2e;
+  line-height: 1;
+  flex: 1;
+  text-align: center;
+}
 
 /* ── level nav (debug, bottom-left) ─────────────────────────────────── */
 #level-nav {

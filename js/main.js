@@ -1787,7 +1787,7 @@ function loadLevel(idx) {
   resetFreezeState();
   resetDynamiteState();
   resetBlackholeState();
-  if (idx === 7) {
+  if (idx < 7) {
     freezeCharges = 0;
     var freezeBtn = document.getElementById('booster-freeze');
     if (freezeBtn) {
@@ -1795,8 +1795,15 @@ function loadLevel(idx) {
       freezeBtn.querySelector('.booster-lvl').textContent  = 'Lv.8';
       freezeBtn.classList.remove('unlocked', 'depleted');
     }
+  } else {
+    var freezeUnlockedBtn = document.getElementById('booster-freeze');
+    if (freezeUnlockedBtn) {
+      freezeUnlockedBtn.querySelector('.booster-icon').textContent = '❄️';
+      freezeUnlockedBtn.classList.add('unlocked');
+    }
+    updateFreezeDisplay();
   }
-  if (idx === 12) {
+  if (idx < 12) {
     dynamiteCharges = 0;
     var dynBtn = document.getElementById('booster-dynamite');
     if (dynBtn) {
@@ -1804,8 +1811,15 @@ function loadLevel(idx) {
       dynBtn.querySelector('.booster-lvl').textContent  = 'Lv.13';
       dynBtn.classList.remove('unlocked', 'depleted');
     }
+  } else {
+    var dynUnlockedBtn = document.getElementById('booster-dynamite');
+    if (dynUnlockedBtn) {
+      dynUnlockedBtn.querySelector('.booster-icon').textContent = '💣';
+      dynUnlockedBtn.classList.add('unlocked');
+    }
+    updateDynamiteDisplay();
   }
-  if (idx === 17) {
+  if (idx < 17) {
     blackholeCharges = 0;
     var bhBtn = document.getElementById('booster-blackhole');
     if (bhBtn) {
@@ -1813,6 +1827,13 @@ function loadLevel(idx) {
       bhBtn.querySelector('.booster-lvl').textContent  = 'Lv.18';
       bhBtn.classList.remove('unlocked', 'depleted');
     }
+  } else {
+    var bhUnlockedBtn = document.getElementById('booster-blackhole');
+    if (bhUnlockedBtn) {
+      bhUnlockedBtn.querySelector('.booster-icon').textContent = '🕳️';
+      bhUnlockedBtn.classList.add('unlocked');
+    }
+    updateBlackholeDisplay();
   }
   var cfg = LEVELS[idx] || {};
   defaultLevelTimeSeconds = typeof cfg.time === 'number' ? Math.max(1, cfg.time) : 50;

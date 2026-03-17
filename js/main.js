@@ -1773,6 +1773,10 @@ function setStartGate(active) {
   sceneEl.style.pointerEvents = '';
 }
 
+function sendBoosterUnlockEvent(type) {
+  window.location = "uniwebview://booster_unlock?type=" + encodeURIComponent(type);
+}
+
 // Вызывается движком когда все фигуры убраны
 window.onLevelComplete = function() {
   window.location = "uniwebview://complete?coins=" + coinsCount.toString() + "&hearts=" + heartsCount.toString();
@@ -1784,6 +1788,9 @@ function loadLevel(idx) {
   resetFreezeState();
   resetDynamiteState();
   resetBlackholeState();
+  if (idx >= 7) sendBoosterUnlockEvent('freeze');
+  if (idx >= 12) sendBoosterUnlockEvent('dynamite');
+  if (idx >= 17) sendBoosterUnlockEvent('blackhole');
   if (idx < 7) {
     freezeCharges = 0;
     var freezeBtn = document.getElementById('booster-freeze');

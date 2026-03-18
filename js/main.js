@@ -1937,6 +1937,30 @@ function rewardResult(value) {
   }
 }
 
+function addBoosterRewardCharge(type) {
+  if (type === 'freeze') {
+    freezeCharges += 1;
+    updateFreezeDisplay();
+    return;
+  }
+  if (type === 'dynamite') {
+    dynamiteCharges += 1;
+    updateDynamiteDisplay();
+    return;
+  }
+  if (type === 'blackhole') {
+    blackholeCharges += 1;
+    updateBlackholeDisplay();
+  }
+}
+
+function boosterRewardResult(value) {
+  var isSuccess = value === true || String(value).toLowerCase() === 'true';
+  if (!isSuccess) return;
+  addBoosterRewardCharge(boosterRewardType);
+  setBoosterRewardOverlay(false);
+}
+
 function updateCoinsView() {
   document.getElementById('sc-value').innerHTML = coinsCount;
 }
@@ -2011,7 +2035,6 @@ outTimeRewardBtn.addEventListener('click', function() {
 if (boosterRewardWatchBtn) {
   boosterRewardWatchBtn.addEventListener('click', function() {
     var type = boosterRewardType;
-    setBoosterRewardOverlay(false);
     if (!type) return;
     sendBoosterRewardEvent(type);
   });

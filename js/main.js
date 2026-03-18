@@ -46,9 +46,11 @@ var blackholeFigActive      = false;
 var blackholeFigTarget      = null;
 var blackholeFigHandler     = null;
 var blackholeSelectCleanup  = null;
-var freezeCharges     = 0;
-var dynamiteCharges   = 0;
-var blackholeCharges  = 0;
+var boosterBalances = {
+  freeze: 0,
+  dynamite: 0,
+  blackhole: 0,
+};
 var startOverlayFadeMs = 300;
 var tutorialHandEl = document.getElementById('tutorial-hand');
 var levelTimerId = null;
@@ -62,6 +64,12 @@ var outTimeRewardBtn = document.getElementById('out-time-reward');
 var outTimeSoftBtn = document.getElementById('out-time-soft');
 var outTimeRestartBtn = document.getElementById('out-time-restart');
 var outTimeActive = false;
+var boosterRewardOverlay = document.getElementById('booster-reward-overlay');
+var boosterRewardIcon = document.getElementById('booster-reward-icon');
+var boosterRewardWatchBtn = document.getElementById('booster-reward-watch');
+var boosterRewardCloseBtn = document.getElementById('booster-reward-close');
+var boosterRewardActive = false;
+var boosterRewardType = '';
 var timeCaptionEl = document.getElementById('time-caption');
 var hudMainEl = document.getElementById('hud-main');
 var boosterTutorialActive = false;
@@ -221,6 +229,97 @@ function setQuitOverlay(active) {
     if (quitActive) return;
     quitOverlay.style.display = 'none';
     quitOverlay.setAttribute('aria-hidden', 'true');
+  }, 220);
+  sceneEl.style.pointerEvents = '';
+}
+
+function getBoosterIcon(type) {
+  if (type === 'freeze') return '❄️';
+  if (type === 'dynamite') return '💣';
+  if (type === 'blackhole') return '🕳️';
+  return '🎁';
+}
+
+function hasBoosterType(type) {
+  return Object.prototype.hasOwnProperty.call(boosterBalances, type);
+}
+
+function getBoosterBalance(type) {
+  return hasBoosterType(type) ? boosterBalances[type] : 0;
+}
+
+function setBoosterBalance(type, value) {
+  if (!hasBoosterType(type)) return;
+  var next = parseInt(value, 10);
+  boosterBalances[type] = Number.isFinite(next) ? Math.max(0, next) : 0;
+}
+
+function addBoosterBalance(type, delta) {
+  if (!hasBoosterType(type)) return;
+  var step = parseInt(delta, 10);
+  if (!Number.isFinite(step)) return;
+  setBoosterBalance(type, getBoosterBalance(type) + step);
+}
+
+function refreshBoosterDisplays() {
+  updateFreezeDisplay();
+  updateDynamiteDisplay();
+  updateBlackholeDisplay();
+}
+
+function updateTutorialBoosterDisplay(type) {
+  var btnId = '';
+  if (type === 'freeze') btnId = 'booster-tutorial-btn';
+  if (type === 'dynamite') btnId = 'dynamite-tutorial-btn';
+  if (type === 'blackhole') btnId = 'blackhole-tutorial-btn';
+  if (!btnId) return;
+  var btn = document.getElementById(btnId);
+  if (!btn || !btn.classList.contains('unlocked')) return;
+  btn.querySelector('.booster-lvl').textContent = String(getBoosterBalance(type));
+}
+
+function refreshTutorialBoosterDisplays() {
+  updateTutorialBoosterDisplay('freeze');
+  updateTutorialBoosterDisplay('dynamite');
+  updateTutorialBoosterDisplay('blackhole');
+}
+
+function setBoosters(value) {
+  var payload = value;
+  if (typeof value === 'string') {
+    try {
+      payload = JSON.parse(value);
+    } catch (e) {
+      return;
+    }
+  }
+  if (!payload || typeof payload !== 'object') return;
+  Object.keys(boosterBalances).forEach(function(type) {
+    if (Object.prototype.hasOwnProperty.call(payload, type)) {
+      setBoosterBalance(type, payload[type]);
+    }
+  });
+  refreshBoosterDisplays();
+  refreshTutorialBoosterDisplays();
+}
+
+function setBoosterRewardOverlay(active, type) {
+  boosterRewardActive = active;
+  if (!boosterRewardOverlay) return;
+  if (active) {
+    boosterRewardType = type || '';
+    if (boosterRewardIcon) boosterRewardIcon.textContent = getBoosterIcon(boosterRewardType);
+    boosterRewardOverlay.style.display = 'flex';
+    boosterRewardOverlay.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(function() { boosterRewardOverlay.style.opacity = '1'; });
+    sceneEl.style.pointerEvents = 'none';
+    return;
+  }
+  boosterRewardOverlay.style.opacity = '0';
+  setTimeout(function() {
+    if (boosterRewardActive) return;
+    boosterRewardOverlay.style.display = 'none';
+    boosterRewardOverlay.setAttribute('aria-hidden', 'true');
   }, 220);
   sceneEl.style.pointerEvents = '';
 }
@@ -810,25 +909,25 @@ startOverlayConfigs[17].draw = drawBlackholeSymbol;
 function updateFreezeDisplay() {
   var btn = document.getElementById('booster-freeze');
   if (!btn || !btn.classList.contains('unlocked')) return;
-  btn.querySelector('.booster-lvl').textContent = String(freezeCharges);
-  if (freezeCharges <= 0) btn.classList.add('depleted');
-  else                    btn.classList.remove('depleted');
+  var balance = getBoosterBalance('freeze');
+  btn.querySelector('.booster-lvl').textContent = balance <= 0 ? '+' : String(balance);
+  btn.classList.remove('depleted');
 }
 
 function updateDynamiteDisplay() {
   var btn = document.getElementById('booster-dynamite');
   if (!btn || !btn.classList.contains('unlocked')) return;
-  btn.querySelector('.booster-lvl').textContent = String(dynamiteCharges);
-  if (dynamiteCharges <= 0) btn.classList.add('depleted');
-  else                      btn.classList.remove('depleted');
+  var balance = getBoosterBalance('dynamite');
+  btn.querySelector('.booster-lvl').textContent = balance <= 0 ? '+' : String(balance);
+  btn.classList.remove('depleted');
 }
 
 function updateBlackholeDisplay() {
   var btn = document.getElementById('booster-blackhole');
   if (!btn || !btn.classList.contains('unlocked')) return;
-  btn.querySelector('.booster-lvl').textContent = String(blackholeCharges);
-  if (blackholeCharges <= 0) btn.classList.add('depleted');
-  else                       btn.classList.remove('depleted');
+  var balance = getBoosterBalance('blackhole');
+  btn.querySelector('.booster-lvl').textContent = balance <= 0 ? '+' : String(balance);
+  btn.classList.remove('depleted');
 }
 
 function shakeBooster(btn) {
@@ -874,9 +973,9 @@ function boosterBreakAnimation(btn, rect) {
   setTimeout(function() {
     if (!boosterTutorialActive) return;
     btn.querySelector('.booster-icon').textContent = '❄️';
-    btn.querySelector('.booster-lvl').textContent  = '2';
     btn.classList.remove('shatter-out');
     btn.classList.add('unlocked', 'appear-in');
+    updateTutorialBoosterDisplay('freeze');
     setTimeout(function() {
       if (!boosterTutorialActive) return;
       btn.classList.remove('appear-in');
@@ -1072,9 +1171,9 @@ function dynamiteBreakAnimation(btn, rect) {
   setTimeout(function() {
     if (!dynamiteTutorialActive) return;
     btn.querySelector('.booster-icon').textContent = '💣';
-    btn.querySelector('.booster-lvl').textContent  = '2';
     btn.classList.remove('shatter-out');
     btn.classList.add('unlocked', 'appear-in');
+    updateTutorialBoosterDisplay('dynamite');
     setTimeout(function() {
       if (!dynamiteTutorialActive) return;
       btn.classList.remove('appear-in');
@@ -1154,15 +1253,12 @@ function hideDynamiteTutorial() {
 
 function activateDynamite() {
   hideDynamiteTutorial();
-  // Unlock the actual HUD button and grant 1 charge (tutorial use is free)
   var srcBtn = document.getElementById('booster-dynamite');
   if (srcBtn) {
     srcBtn.querySelector('.booster-icon').textContent = '💣';
     srcBtn.classList.add('unlocked');
   }
-  dynamiteCharges = 1;
   updateDynamiteDisplay();
-  // After overlay fade, highlight a figure for the free tutorial demonstration
   setTimeout(function() {
     var figures = Array.from(document.querySelectorAll('.figure'));
     if (!figures.length) return;
@@ -1175,7 +1271,7 @@ function activateDynamite() {
 // Free-use dynamite: player taps any figure or blocker
 function startDynamiteSelectMode() {
   var figures = Array.from(document.querySelectorAll('.figure, .blocker'));
-  if (!figures.length) { dynamiteCharges++; updateDynamiteDisplay(); return; }
+  if (!figures.length) { addBoosterBalance('dynamite', 1); updateDynamiteDisplay(); return; }
   dynamiteFigActive = true;
   sceneEl.style.pointerEvents = 'none';
   var handlers = [];
@@ -1259,6 +1355,7 @@ function startDynamiteFigHandAnim(fig) {
 }
 
 function startDynamiteExplosion(fig) {
+  sendBoosterUsedEvent('dynamite');
   var rect = fig.getBoundingClientRect();
   var cx = rect.left + rect.width  / 2;
   var cy = rect.top  + rect.height / 2;
@@ -1419,9 +1516,9 @@ function blackholeBreakAnimation(btn, rect) {
   setTimeout(function() {
     if (!blackholeTutorialActive) return;
     btn.querySelector('.booster-icon').textContent = '🕳️';
-    btn.querySelector('.booster-lvl').textContent  = '2';
     btn.classList.remove('shatter-out');
     btn.classList.add('unlocked', 'appear-in');
+    updateTutorialBoosterDisplay('blackhole');
     setTimeout(function() {
       if (!blackholeTutorialActive) return;
       btn.classList.remove('appear-in');
@@ -1507,7 +1604,6 @@ function activateBlackhole() {
     srcBtn.querySelector('.booster-icon').textContent = '🕳️';
     srcBtn.classList.add('unlocked');
   }
-  blackholeCharges = 1;   // tutorial used 1 of the 2 shown, 1 remains
   updateBlackholeDisplay();
   setTimeout(function() {
     var figures = Array.from(document.querySelectorAll('.figure'));
@@ -1573,7 +1669,7 @@ function startBHFigHandAnim(fig) {
 // Free-use black hole: player taps any figure or blocker
 function startBlackholeSelectMode() {
   var figures = Array.from(document.querySelectorAll('.figure, .blocker'));
-  if (!figures.length) { blackholeCharges++; updateBlackholeDisplay(); return; }
+  if (!figures.length) { addBoosterBalance('blackhole', 1); updateBlackholeDisplay(); return; }
   blackholeFigActive = true;
   sceneEl.style.pointerEvents = 'none';
   var handlers = [];
@@ -1603,6 +1699,7 @@ function startBlackholeSelectMode() {
 }
 
 function startBlackholeEffect(fig) {
+  sendBoosterUsedEvent('blackhole');
   if (typeof Sounds !== 'undefined') Sounds.blackhole();
   var rect = fig.getBoundingClientRect();
   var cx = rect.left + rect.width  / 2;
@@ -1690,6 +1787,7 @@ function resetBlackholeState() {
 
 function activateFreezeEffect() {
   if (freezeActive) return;
+  sendBoosterUsedEvent('freeze');
   if (typeof Sounds !== 'undefined') Sounds.freeze();
   document.body.classList.add('frozen');
   var frameEl = document.getElementById('frame');
@@ -1709,13 +1807,11 @@ function activateFreezeEffect() {
 
 function activateFreeze() {
   hideBoosterTutorial();
-  // Unlock button and grant 1 charge (tutorial use is free demonstration)
   var srcBtn = document.getElementById('booster-freeze');
   if (srcBtn) {
     srcBtn.querySelector('.booster-icon').textContent = '❄️';
     srcBtn.classList.add('unlocked');
   }
-  freezeCharges = 1;
   updateFreezeDisplay();
   activateFreezeEffect();
 }
@@ -1776,6 +1872,18 @@ function setStartGate(active) {
   sceneEl.style.pointerEvents = '';
 }
 
+function sendBoosterUnlockEvent(type) {
+  window.location = "uniwebview://booster_unlock?type=" + encodeURIComponent(type);
+}
+
+function sendBoosterUsedEvent(type) {
+  window.location = "uniwebview://booster_used?type=" + encodeURIComponent(type);
+}
+
+function sendBoosterRewardEvent(type) {
+  window.location = "uniwebview://booster_reward?type=" + encodeURIComponent(type);
+}
+
 // Вызывается движком когда все фигуры убраны
 window.onLevelComplete = function() {
   window.location = "uniwebview://complete?coins=" + coinsCount.toString() + "&hearts=" + heartsCount.toString();
@@ -1783,36 +1891,61 @@ window.onLevelComplete = function() {
 };
 
 function loadLevel(idx) {
+  setBoosterRewardOverlay(false);
   hideBoosterTutorial();
   resetFreezeState();
   resetDynamiteState();
   resetBlackholeState();
-  if (idx === 7) {
-    freezeCharges = 0;
+  if (idx >= 7) sendBoosterUnlockEvent('freeze');
+  if (idx >= 12) sendBoosterUnlockEvent('dynamite');
+  if (idx >= 17) sendBoosterUnlockEvent('blackhole');
+  if (idx < 7) {
+    setBoosterBalance('freeze', 0);
     var freezeBtn = document.getElementById('booster-freeze');
     if (freezeBtn) {
       freezeBtn.querySelector('.booster-icon').textContent = '🔒';
       freezeBtn.querySelector('.booster-lvl').textContent  = 'Lv.8';
       freezeBtn.classList.remove('unlocked', 'depleted');
     }
+  } else {
+    var freezeUnlockedBtn = document.getElementById('booster-freeze');
+    if (freezeUnlockedBtn) {
+      freezeUnlockedBtn.querySelector('.booster-icon').textContent = '❄️';
+      freezeUnlockedBtn.classList.add('unlocked');
+    }
+    updateFreezeDisplay();
   }
-  if (idx === 12) {
-    dynamiteCharges = 0;
+  if (idx < 12) {
+    setBoosterBalance('dynamite', 0);
     var dynBtn = document.getElementById('booster-dynamite');
     if (dynBtn) {
       dynBtn.querySelector('.booster-icon').textContent = '🔒';
       dynBtn.querySelector('.booster-lvl').textContent  = 'Lv.13';
       dynBtn.classList.remove('unlocked', 'depleted');
     }
+  } else {
+    var dynUnlockedBtn = document.getElementById('booster-dynamite');
+    if (dynUnlockedBtn) {
+      dynUnlockedBtn.querySelector('.booster-icon').textContent = '💣';
+      dynUnlockedBtn.classList.add('unlocked');
+    }
+    updateDynamiteDisplay();
   }
-  if (idx === 17) {
-    blackholeCharges = 0;
+  if (idx < 17) {
+    setBoosterBalance('blackhole', 0);
     var bhBtn = document.getElementById('booster-blackhole');
     if (bhBtn) {
       bhBtn.querySelector('.booster-icon').textContent = '🔒';
       bhBtn.querySelector('.booster-lvl').textContent  = 'Lv.18';
       bhBtn.classList.remove('unlocked', 'depleted');
     }
+  } else {
+    var bhUnlockedBtn = document.getElementById('booster-blackhole');
+    if (bhUnlockedBtn) {
+      bhUnlockedBtn.querySelector('.booster-icon').textContent = '🕳️';
+      bhUnlockedBtn.classList.add('unlocked');
+    }
+    updateBlackholeDisplay();
   }
   var cfg = LEVELS[idx] || {};
   defaultLevelTimeSeconds = typeof cfg.time === 'number' ? Math.max(1, cfg.time) : 50;
@@ -1864,6 +1997,21 @@ function rewardResult(value) {
       addTimeReward = false;
     }
   }
+}
+
+function addBoosterRewardCharge(type) {
+  if (!hasBoosterType(type)) return;
+  addBoosterBalance(type, 1);
+  if (type === 'freeze') updateFreezeDisplay();
+  if (type === 'dynamite') updateDynamiteDisplay();
+  if (type === 'blackhole') updateBlackholeDisplay();
+}
+
+function boosterRewardResult(value) {
+  var isSuccess = value === true || String(value).toLowerCase() === 'true';
+  if (!isSuccess) return;
+  addBoosterRewardCharge(boosterRewardType);
+  setBoosterRewardOverlay(false);
 }
 
 function updateCoinsView() {
@@ -1937,6 +2085,18 @@ outTimeRewardBtn.addEventListener('click', function() {
   addTimeReward = true;
   window.location = "uniwebview://reward";
 });
+if (boosterRewardWatchBtn) {
+  boosterRewardWatchBtn.addEventListener('click', function() {
+    var type = boosterRewardType;
+    if (!type) return;
+    sendBoosterRewardEvent(type);
+  });
+}
+if (boosterRewardCloseBtn) {
+  boosterRewardCloseBtn.addEventListener('click', function() {
+    setBoosterRewardOverlay(false);
+  });
+}
 
 outTimeSoftBtn.addEventListener('click', function() {
   if (coinsCount > timeOutCoinsCost) {
@@ -1984,9 +2144,9 @@ if (freezeBtnHud) {
     if (boosterTutorialActive) return;           // tutorial handles it via overlay
     if (!freezeBtnHud.classList.contains('unlocked')) return;
     if (freezeActive) return;                     // already frozen
-    if (freezeCharges <= 0) { shakeBooster(freezeBtnHud); return; }
+    if (getBoosterBalance('freeze') <= 0) { setBoosterRewardOverlay(true, 'freeze'); return; }
     if (typeof Sounds !== 'undefined') Sounds.boosterClick();
-    freezeCharges--;
+    addBoosterBalance('freeze', -1);
     updateFreezeDisplay();
     activateFreezeEffect();
   });
@@ -1998,9 +2158,9 @@ if (dynamiteBtnHud) {
     if (dynamiteTutorialActive) return;          // tutorial handles it via overlay
     if (!dynamiteBtnHud.classList.contains('unlocked')) return;
     if (dynamiteFigActive) return;               // already in select mode
-    if (dynamiteCharges <= 0) { shakeBooster(dynamiteBtnHud); return; }
+    if (getBoosterBalance('dynamite') <= 0) { setBoosterRewardOverlay(true, 'dynamite'); return; }
     if (typeof Sounds !== 'undefined') Sounds.boosterClick();
-    dynamiteCharges--;
+    addBoosterBalance('dynamite', -1);
     updateDynamiteDisplay();
     startDynamiteSelectMode();
   });
@@ -2012,9 +2172,9 @@ if (blackholeBtnHud) {
     if (blackholeTutorialActive) return;
     if (!blackholeBtnHud.classList.contains('unlocked')) return;
     if (blackholeFigActive) return;
-    if (blackholeCharges <= 0) { shakeBooster(blackholeBtnHud); return; }
+    if (getBoosterBalance('blackhole') <= 0) { setBoosterRewardOverlay(true, 'blackhole'); return; }
     if (typeof Sounds !== 'undefined') Sounds.boosterClick();
-    blackholeCharges--;
+    addBoosterBalance('blackhole', -1);
     updateBlackholeDisplay();
     startBlackholeSelectMode();
   });

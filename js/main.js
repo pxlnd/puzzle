@@ -267,6 +267,23 @@ function refreshBoosterDisplays() {
   updateBlackholeDisplay();
 }
 
+function updateTutorialBoosterDisplay(type) {
+  var btnId = '';
+  if (type === 'freeze') btnId = 'booster-tutorial-btn';
+  if (type === 'dynamite') btnId = 'dynamite-tutorial-btn';
+  if (type === 'blackhole') btnId = 'blackhole-tutorial-btn';
+  if (!btnId) return;
+  var btn = document.getElementById(btnId);
+  if (!btn || !btn.classList.contains('unlocked')) return;
+  btn.querySelector('.booster-lvl').textContent = String(getBoosterBalance(type));
+}
+
+function refreshTutorialBoosterDisplays() {
+  updateTutorialBoosterDisplay('freeze');
+  updateTutorialBoosterDisplay('dynamite');
+  updateTutorialBoosterDisplay('blackhole');
+}
+
 function setBoosters(value) {
   var payload = value;
   if (typeof value === 'string') {
@@ -283,6 +300,7 @@ function setBoosters(value) {
     }
   });
   refreshBoosterDisplays();
+  refreshTutorialBoosterDisplays();
 }
 
 function setBoosterRewardOverlay(active, type) {
@@ -955,9 +973,9 @@ function boosterBreakAnimation(btn, rect) {
   setTimeout(function() {
     if (!boosterTutorialActive) return;
     btn.querySelector('.booster-icon').textContent = '❄️';
-    btn.querySelector('.booster-lvl').textContent  = '+';
     btn.classList.remove('shatter-out');
     btn.classList.add('unlocked', 'appear-in');
+    updateTutorialBoosterDisplay('freeze');
     setTimeout(function() {
       if (!boosterTutorialActive) return;
       btn.classList.remove('appear-in');
@@ -1153,9 +1171,9 @@ function dynamiteBreakAnimation(btn, rect) {
   setTimeout(function() {
     if (!dynamiteTutorialActive) return;
     btn.querySelector('.booster-icon').textContent = '💣';
-    btn.querySelector('.booster-lvl').textContent  = '+';
     btn.classList.remove('shatter-out');
     btn.classList.add('unlocked', 'appear-in');
+    updateTutorialBoosterDisplay('dynamite');
     setTimeout(function() {
       if (!dynamiteTutorialActive) return;
       btn.classList.remove('appear-in');
@@ -1498,9 +1516,9 @@ function blackholeBreakAnimation(btn, rect) {
   setTimeout(function() {
     if (!blackholeTutorialActive) return;
     btn.querySelector('.booster-icon').textContent = '🕳️';
-    btn.querySelector('.booster-lvl').textContent  = '+';
     btn.classList.remove('shatter-out');
     btn.classList.add('unlocked', 'appear-in');
+    updateTutorialBoosterDisplay('blackhole');
     setTimeout(function() {
       if (!blackholeTutorialActive) return;
       btn.classList.remove('appear-in');

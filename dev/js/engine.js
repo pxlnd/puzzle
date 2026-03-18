@@ -54,7 +54,7 @@ function makeWall(colorKey, dir, col, row, cells) {
   var WALL_LONG_N = cells * CELL + (cells - 1) * GAP;
   var el = document.createElement('div');
   el.className = 'wall ' + colorKey;
-  el.textContent = { top: '▲', bottom: '▼', right: '▶', left: '◀' }[dir];
+  el.textContent = { top: '▲\uFE0E', bottom: '▼\uFE0E', right: '▶\uFE0E', left: '◀\uFE0E' }[dir];
   el._colorKey  = colorKey;
   el._dir       = dir;
   el._wallCells = cells;
@@ -436,7 +436,7 @@ function createFigure(shapeName, color, startCol, startRow, moveAxis, outlineCol
   if (fig._moveAxis === 'x' || fig._moveAxis === 'y') {
     var arrow = document.createElement('div');
     arrow.className = 'figure-arrow';
-    arrow.textContent = fig._moveAxis === 'x' ? '↔' : '↕';
+    arrow.textContent = fig._moveAxis === 'x' ? '↔\uFE0E' : '↕\uFE0E';
     arrow.style.fontSize = Math.max(30, Math.floor(Math.min(W, H) * 0.62)) + 'px';
     fig.appendChild(arrow);
   }

@@ -10,7 +10,7 @@ var timeValue = document.getElementById('time-value');
 var restartBtn = document.getElementById('restart-btn');
 var startOverlayConfigs = {
   6: {
-    arrowText: '↕',
+    arrowText: '\u2195\uFE0E',
     subtitle: 'You have unlocked the <b>Arrow Block!</b>',
     desc: 'Moves only in the given direction!',
     draw: null, // assigned below

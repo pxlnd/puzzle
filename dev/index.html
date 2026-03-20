@@ -17,14 +17,14 @@
 </head>
 <body>
   <div id="hud-top">
-    <button class="icon-btn" id="back-btn" aria-label="Back">&#x2190;&#xFE0E;</button>
+    <div id="level-badge" aria-live="polite">
+      <span class="badge-caption">LEVEL</span>
+      <span class="badge-value" id="level-value">1</span>
+    </div>
     <div id="hud-main">
-      <div id="level-badge" aria-live="polite">
-        <span class="badge-caption">Level</span>
-        <span class="badge-value" id="level-value">1</span>
-      </div>
+      <button class="icon-btn" id="back-btn" aria-label="Back">&#x2190;&#xFE0E;</button>
       <div id="time-panel" aria-live="polite">
-        <div id="time-caption">Time</div>
+        <div id="time-caption">TIME</div>
         <div id="time-value">03:30</div>
       </div>
       <button class="icon-btn icon-btn-restart" id="restart-btn" aria-label="Restart">&#x21BB;&#xFE0E;</button>
@@ -61,17 +61,20 @@
   </div>
 
   <div id="boosters-bar" aria-label="Boosters">
-    <button class="booster-btn" id="booster-freeze" aria-label="Booster locked level 8">
-      <span class="booster-icon">🔒</span>
+    <button class="booster-btn booster-hud-btn" id="booster-freeze" aria-label="Booster locked level 8">
+      <span class="booster-icon"></span>
       <span class="booster-lvl">Lv.8</span>
+      <span class="booster-lock" aria-hidden="true"></span>
     </button>
-    <button class="booster-btn" id="booster-dynamite" aria-label="Booster locked level 13">
-      <span class="booster-icon">🔒</span>
+    <button class="booster-btn booster-hud-btn" id="booster-dynamite" aria-label="Booster locked level 13">
+      <span class="booster-icon"></span>
       <span class="booster-lvl">Lv.13</span>
+      <span class="booster-lock" aria-hidden="true"></span>
     </button>
-    <button class="booster-btn" id="booster-blackhole" aria-label="Booster locked level 18">
-      <span class="booster-icon">🔒</span>
+    <button class="booster-btn booster-hud-btn" id="booster-blackhole" aria-label="Booster locked level 18">
+      <span class="booster-icon"></span>
       <span class="booster-lvl">Lv.18</span>
+      <span class="booster-lock" aria-hidden="true"></span>
     </button>
   </div>
 
@@ -126,27 +129,30 @@
   <!-- Booster tutorial overlay -->
   <div id="booster-tutorial" style="display:none;" aria-hidden="true">
     <div id="booster-spotlight"></div>
-    <button id="booster-tutorial-btn" class="booster-btn">
+    <button id="booster-tutorial-btn" class="booster-btn booster-hud-btn">
       <span class="booster-icon">🔒</span>
       <span class="booster-lvl">Lv.8</span>
+      <span class="booster-lock" aria-hidden="true"></span>
     </button>
   </div>
 
   <!-- Dynamite booster tutorial overlay -->
   <div id="dynamite-tutorial" style="display:none;" aria-hidden="true">
     <div id="dynamite-spotlight"></div>
-    <button id="dynamite-tutorial-btn" class="booster-btn">
+    <button id="dynamite-tutorial-btn" class="booster-btn booster-hud-btn">
       <span class="booster-icon">🔒</span>
       <span class="booster-lvl">Lv.13</span>
+      <span class="booster-lock" aria-hidden="true"></span>
     </button>
   </div>
 
   <!-- Black Hole booster tutorial overlay -->
   <div id="blackhole-tutorial" style="display:none;" aria-hidden="true">
     <div id="blackhole-spotlight"></div>
-    <button id="blackhole-tutorial-btn" class="booster-btn">
+    <button id="blackhole-tutorial-btn" class="booster-btn booster-hud-btn">
       <span class="booster-icon">🔒</span>
       <span class="booster-lvl">Lv.18</span>
+      <span class="booster-lock" aria-hidden="true"></span>
     </button>
   </div>
 

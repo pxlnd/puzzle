@@ -70,8 +70,7 @@ var boosterRewardWatchBtn = document.getElementById('booster-reward-watch');
 var boosterRewardCloseBtn = document.getElementById('booster-reward-close');
 var boosterRewardActive = false;
 var boosterRewardType = '';
-var timeCaptionEl = document.getElementById('time-caption');
-var hudMainEl = document.getElementById('hud-main');
+var timePanelEl = document.getElementById('time-panel');
 var boosterTutorialActive = false;
 var boosterHandAnim = null;
 var freezeActive = false;
@@ -276,6 +275,19 @@ function updateTutorialBoosterDisplay(type) {
   var btn = document.getElementById(btnId);
   if (!btn || !btn.classList.contains('unlocked')) return;
   btn.querySelector('.booster-lvl').textContent = String(getBoosterBalance(type));
+}
+
+function syncTutorialBoosterButton(tutBtn, srcBtn) {
+  if (!tutBtn || !srcBtn) return;
+  tutBtn.classList.toggle('unlocked', srcBtn.classList.contains('unlocked'));
+  tutBtn.classList.toggle('has-count', srcBtn.classList.contains('has-count'));
+  tutBtn.classList.toggle('depleted', srcBtn.classList.contains('depleted'));
+  var srcLvl = srcBtn.querySelector('.booster-lvl');
+  var tutLvl = tutBtn.querySelector('.booster-lvl');
+  if (srcLvl && tutLvl) {
+    tutLvl.textContent = srcLvl.textContent;
+    tutLvl.style.display = srcLvl.style.display;
+  }
 }
 
 function refreshTutorialBoosterDisplays() {
@@ -910,7 +922,12 @@ function updateFreezeDisplay() {
   var btn = document.getElementById('booster-freeze');
   if (!btn || !btn.classList.contains('unlocked')) return;
   var balance = getBoosterBalance('freeze');
-  btn.querySelector('.booster-lvl').textContent = balance <= 0 ? '+' : String(balance);
+  var lvl = btn.querySelector('.booster-lvl');
+  if (lvl) {
+    lvl.textContent = String(balance);
+    lvl.style.display = 'block';
+  }
+  btn.classList.add('has-count');
   btn.classList.remove('depleted');
 }
 
@@ -918,7 +935,12 @@ function updateDynamiteDisplay() {
   var btn = document.getElementById('booster-dynamite');
   if (!btn || !btn.classList.contains('unlocked')) return;
   var balance = getBoosterBalance('dynamite');
-  btn.querySelector('.booster-lvl').textContent = balance <= 0 ? '+' : String(balance);
+  var lvl = btn.querySelector('.booster-lvl');
+  if (lvl) {
+    lvl.textContent = String(balance);
+    lvl.style.display = 'block';
+  }
+  btn.classList.add('has-count');
   btn.classList.remove('depleted');
 }
 
@@ -926,7 +948,12 @@ function updateBlackholeDisplay() {
   var btn = document.getElementById('booster-blackhole');
   if (!btn || !btn.classList.contains('unlocked')) return;
   var balance = getBoosterBalance('blackhole');
-  btn.querySelector('.booster-lvl').textContent = balance <= 0 ? '+' : String(balance);
+  var lvl = btn.querySelector('.booster-lvl');
+  if (lvl) {
+    lvl.textContent = String(balance);
+    lvl.style.display = 'block';
+  }
+  btn.classList.add('has-count');
   btn.classList.remove('depleted');
 }
 
@@ -956,29 +983,29 @@ function showBoosterTutorial() {
   tutBtn.style.top    = rect.top    + 'px';
   tutBtn.style.width  = rect.width  + 'px';
   tutBtn.style.height = rect.height + 'px';
-  tutBtn.querySelector('.booster-icon').textContent = '🔒';
-  tutBtn.querySelector('.booster-lvl').textContent  = 'Lv.8';
-  tutBtn.classList.remove('unlocked', 'shatter-out', 'appear-in');
+  syncTutorialBoosterButton(tutBtn, srcBtn);
+  tutBtn.classList.remove('shatter-out', 'appear-in');
   overlay.style.display = 'flex';
   requestAnimationFrame(function() { overlay.style.opacity = '1'; });
   startBoosterHandAnim(tutBtn);
   setTimeout(function() {
-    if (boosterTutorialActive) boosterBreakAnimation(tutBtn, rect);
+    if (boosterTutorialActive) boosterBreakAnimation(tutBtn, rect, srcBtn, 'freeze');
   }, 650);
 }
 
-function boosterBreakAnimation(btn, rect) {
+function boosterBreakAnimation(btn, rect, srcBtn, type) {
   btn.classList.add('shatter-out');
   spawnBoosterShards(rect);
   setTimeout(function() {
     if (!boosterTutorialActive) return;
-    btn.querySelector('.booster-icon').textContent = '❄️';
     btn.classList.remove('shatter-out');
-    btn.classList.add('unlocked', 'appear-in');
-    updateTutorialBoosterDisplay('freeze');
+    btn.classList.add('appear-in');
+    syncTutorialBoosterButton(btn, srcBtn);
+    updateTutorialBoosterDisplay(type || 'freeze');
     setTimeout(function() {
       if (!boosterTutorialActive) return;
       btn.classList.remove('appear-in');
+      syncTutorialBoosterButton(btn, srcBtn);
       startBoosterHandAnim(btn);
     }, 480);
   }, 440);
@@ -1154,29 +1181,29 @@ function showDynamiteTutorial() {
   tutBtn.style.top    = rect.top    + 'px';
   tutBtn.style.width  = rect.width  + 'px';
   tutBtn.style.height = rect.height + 'px';
-  tutBtn.querySelector('.booster-icon').textContent = '🔒';
-  tutBtn.querySelector('.booster-lvl').textContent  = 'Lv.13';
-  tutBtn.classList.remove('unlocked', 'shatter-out', 'appear-in');
+  syncTutorialBoosterButton(tutBtn, srcBtn);
+  tutBtn.classList.remove('shatter-out', 'appear-in');
   overlay.style.display = 'flex';
   requestAnimationFrame(function() { overlay.style.opacity = '1'; });
   startDynamiteHandAnim(tutBtn);
   setTimeout(function() {
-    if (dynamiteTutorialActive) dynamiteBreakAnimation(tutBtn, rect);
+    if (dynamiteTutorialActive) dynamiteBreakAnimation(tutBtn, rect, srcBtn, 'dynamite');
   }, 650);
 }
 
-function dynamiteBreakAnimation(btn, rect) {
+function dynamiteBreakAnimation(btn, rect, srcBtn, type) {
   btn.classList.add('shatter-out');
   spawnDynamiteShards(rect);
   setTimeout(function() {
     if (!dynamiteTutorialActive) return;
-    btn.querySelector('.booster-icon').textContent = '💣';
     btn.classList.remove('shatter-out');
-    btn.classList.add('unlocked', 'appear-in');
-    updateTutorialBoosterDisplay('dynamite');
+    btn.classList.add('appear-in');
+    syncTutorialBoosterButton(btn, srcBtn);
+    updateTutorialBoosterDisplay(type || 'dynamite');
     setTimeout(function() {
       if (!dynamiteTutorialActive) return;
       btn.classList.remove('appear-in');
+      syncTutorialBoosterButton(btn, srcBtn);
       startDynamiteHandAnim(btn);
     }, 480);
   }, 440);
@@ -1499,29 +1526,29 @@ function showBlackholeTutorial() {
   tutBtn.style.top    = rect.top    + 'px';
   tutBtn.style.width  = rect.width  + 'px';
   tutBtn.style.height = rect.height + 'px';
-  tutBtn.querySelector('.booster-icon').textContent = '🔒';
-  tutBtn.querySelector('.booster-lvl').textContent  = 'Lv.18';
-  tutBtn.classList.remove('unlocked', 'shatter-out', 'appear-in');
+  syncTutorialBoosterButton(tutBtn, srcBtn);
+  tutBtn.classList.remove('shatter-out', 'appear-in');
   overlay.style.display = 'flex';
   requestAnimationFrame(function() { overlay.style.opacity = '1'; });
   startBHHandAnim(tutBtn);
   setTimeout(function() {
-    if (blackholeTutorialActive) blackholeBreakAnimation(tutBtn, rect);
+    if (blackholeTutorialActive) blackholeBreakAnimation(tutBtn, rect, srcBtn, 'blackhole');
   }, 650);
 }
 
-function blackholeBreakAnimation(btn, rect) {
+function blackholeBreakAnimation(btn, rect, srcBtn, type) {
   btn.classList.add('shatter-out');
   spawnBlackholeShards(rect);
   setTimeout(function() {
     if (!blackholeTutorialActive) return;
-    btn.querySelector('.booster-icon').textContent = '🕳️';
     btn.classList.remove('shatter-out');
-    btn.classList.add('unlocked', 'appear-in');
-    updateTutorialBoosterDisplay('blackhole');
+    btn.classList.add('appear-in');
+    syncTutorialBoosterButton(btn, srcBtn);
+    updateTutorialBoosterDisplay(type || 'blackhole');
     setTimeout(function() {
       if (!blackholeTutorialActive) return;
       btn.classList.remove('appear-in');
+      syncTutorialBoosterButton(btn, srcBtn);
       startBHHandAnim(btn);
     }, 480);
   }, 440);
@@ -1800,8 +1827,7 @@ function activateFreezeEffect() {
   freezeActive = true;
   clearLevelTimer();
   timeValue.classList.add('frozen');
-  if (timeCaptionEl) timeCaptionEl.classList.add('frozen');
-  if (hudMainEl) hudMainEl.classList.add('frozen');
+  if (timePanelEl) timePanelEl.classList.add('frozen');
   freezeTimerId = setTimeout(deactivateFreeze, 10000);
 }
 
@@ -1830,8 +1856,7 @@ function deactivateFreeze() {
   removeFreezeSceneOverlay();
   spawnThawParticles();
   timeValue.classList.remove('frozen');
-  if (timeCaptionEl) timeCaptionEl.classList.remove('frozen');
-  if (hudMainEl) hudMainEl.classList.remove('frozen');
+  if (timePanelEl) timePanelEl.classList.remove('frozen');
   runLevelTimer();
 }
 
@@ -1849,8 +1874,7 @@ function resetFreezeState() {
     freezeSceneOverlay = null;
   }
   timeValue.classList.remove('frozen');
-  if (timeCaptionEl) timeCaptionEl.classList.remove('frozen');
-  if (hudMainEl) hudMainEl.classList.remove('frozen');
+  if (timePanelEl) timePanelEl.classList.remove('frozen');
 }
 
 function setStartGate(active) {
@@ -1905,7 +1929,8 @@ function loadLevel(idx) {
     if (freezeBtn) {
       freezeBtn.querySelector('.booster-icon').textContent = '🔒';
       freezeBtn.querySelector('.booster-lvl').textContent  = 'Lv.8';
-      freezeBtn.classList.remove('unlocked', 'depleted');
+      freezeBtn.querySelector('.booster-lvl').style.display = 'none';
+      freezeBtn.classList.remove('unlocked', 'depleted', 'has-count');
     }
   } else {
     var freezeUnlockedBtn = document.getElementById('booster-freeze');
@@ -1921,7 +1946,8 @@ function loadLevel(idx) {
     if (dynBtn) {
       dynBtn.querySelector('.booster-icon').textContent = '🔒';
       dynBtn.querySelector('.booster-lvl').textContent  = 'Lv.13';
-      dynBtn.classList.remove('unlocked', 'depleted');
+      dynBtn.querySelector('.booster-lvl').style.display = 'none';
+      dynBtn.classList.remove('unlocked', 'depleted', 'has-count');
     }
   } else {
     var dynUnlockedBtn = document.getElementById('booster-dynamite');
@@ -1937,7 +1963,8 @@ function loadLevel(idx) {
     if (bhBtn) {
       bhBtn.querySelector('.booster-icon').textContent = '🔒';
       bhBtn.querySelector('.booster-lvl').textContent  = 'Lv.18';
-      bhBtn.classList.remove('unlocked', 'depleted');
+      bhBtn.querySelector('.booster-lvl').style.display = 'none';
+      bhBtn.classList.remove('unlocked', 'depleted', 'has-count');
     }
   } else {
     var bhUnlockedBtn = document.getElementById('booster-blackhole');

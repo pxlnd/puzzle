@@ -69,7 +69,7 @@ function makeWall(colorKey, dir, col, row, cells) {
   var wallLeft = BORDER + PAD + wallCol * (CELL + GAP);
   var wallTop  = BORDER + PAD + wallRow * (CELL + GAP);
   if (dir === 'top')    { el.style.left = wallLeft + 'px'; el.style.top    = offset + 'px'; el._startCell = wallCol; }
-  if (dir === 'bottom') { el.style.left = wallLeft + 'px'; el.style.bottom = offset + 'px'; el._startCell = wallCol; }
+  if (dir === 'bottom') { el.style.left = wallLeft + 'px'; el.style.bottom = (offset + 8) + 'px'; el._startCell = wallCol; }
   if (dir === 'right')  { el.style.top  = wallTop  + 'px'; el.style.right  = offset + 'px'; el._startCell = wallRow; }
   if (dir === 'left')   { el.style.top  = wallTop  + 'px'; el.style.left   = offset + 'px'; el._startCell = wallRow; }
   frame.appendChild(el);

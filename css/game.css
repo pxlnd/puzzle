@@ -39,150 +39,119 @@ body {
 /* ── top HUD ──────────────────────────────────────────────────────────── */
 #hud-top {
     position: fixed;
-    top: calc(max(12px, env(safe-area-inset-top)) + 20px);
+    top: calc(max(12px, env(safe-area-inset-top)) + 18px);
     left: 0;
     right: 0;
     z-index: 10000;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 0 10px;
+    gap: clamp(14px, 2.6vw, 18px);
+    padding: 0 16px;
 }
 
 #hud-main {
-    width: min(460px, calc(100vw - 40px));
-    min-height: clamp(70px, 10.8vw, 88px);
-    border-radius: clamp(26px, 4.8vw, 38px);
-    border: 3px solid #6b79c6;
-    background:
-        radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.42) 0, rgba(255, 255, 255, 0) 36%),
-        linear-gradient(180deg, #54deff 0%, #2ec4fb 50%, #129fe9 100%);
-    box-shadow:
-        inset 0 3px 0 rgba(255, 255, 255, 0.56),
-        inset 0 -4px 0 rgba(12, 76, 146, 0.46),
-        0 10px 20px rgba(36, 54, 95, 0.33);
-    padding: 8px clamp(10px, 2vw, 14px) 8px clamp(92px, 16vw, 118px);
+    width: min(520px, calc(100vw - 64px));
+    min-height: clamp(58px, 9.4vw, 74px);
+    padding: 0;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
+    gap: clamp(14px, 5.2vw, 80px);
     position: relative;
-    overflow: visible;
 }
 
 #level-badge {
-    position: absolute;
-    left: clamp(-22px, -4vw, -14px);
-    top: 50%;
-    transform: translateY(-50%);
-    width: clamp(98px, 17vw, 128px);
-    height: clamp(98px, 17vw, 128px);
-    border-radius: 50%;
-    border: 4px solid #5e6ac0;
-    background:
-        radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.5) 0, rgba(255, 255, 255, 0) 46%),
-        linear-gradient(180deg, #54deff 0%, #199ef0 100%);
-    box-shadow:
-        inset 0 2px 0 rgba(255, 255, 255, 0.5),
-        inset 0 -4px 0 rgba(12, 73, 139, 0.4),
-        0 8px 16px rgba(34, 56, 94, 0.32);
-    color: #fff;
+    position: static;
+    transform: none;
+    width: auto;
+    height: auto;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+    gap: clamp(4px, 1.2vw, 10px);
+    color: #063f98;
+    text-shadow: 0 2px 0 rgba(255, 255, 255, 0.2);
 }
 
 .badge-caption {
-    font-size: clamp(14px, 2.2vw, 20px);
+    font-size: clamp(22px, 5.2vw, 44px);
+    font-weight: 900;
+    text-transform: uppercase;
     line-height: 1;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.4px;
 }
 
 .badge-value {
-    font-size: clamp(44px, 7.8vw, 64px);
-    line-height: 0.88;
+    font-size: clamp(22px, 5.2vw, 44px);
+    font-weight: 900;
+    line-height: 1;
 }
 
 #time-panel {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    position: static;
+    transform: none;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 2px;
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+    justify-content: center;
+    color: #0042a5;
+    text-shadow: none;
 }
 
 #time-caption {
-    font-size: clamp(15px, 2.6vw, 24px);
-    font-weight: 900;
-    line-height: 1;
-    letter-spacing: 0.3px;
-}
-
-#time-caption::before {
-    content: "⏱ ";
-    font-size: 0.85em;
+    display: none;
 }
 
 #time-value {
-    font-size: clamp(22px, 4.2vw, 34px);
+    font-size: clamp(32px, 6.2vw, 50px);
+    font-weight: 900;
     line-height: 1;
-    min-width: clamp(102px, 18vw, 142px);
+    min-width: clamp(176px, 29vw, 246px);
     text-align: center;
-    padding: 4px 12px 6px;
-    border-radius: 14px;
-    border: 2px solid rgba(126, 148, 216, 0.95);
-    background: linear-gradient(180deg, #5363d8 0%, #3549c4 100%);
+    padding: clamp(10px, 1.9vw, 15px) clamp(14px, 3vw, 24px) clamp(12px, 2.1vw, 17px);
+    border-radius: clamp(14px, 2.8vw, 20px);
+    border: none;
+    background: linear-gradient(180deg, #f7f8fa 0%, #eef0f4 100%);
     box-shadow:
-        inset 0 2px 0 rgba(255, 255, 255, 0.36),
-        inset 0 -3px 0 rgba(26, 36, 102, 0.46);
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 6px 0 #7fa8ea;
 }
 
 .icon-btn {
-    width: clamp(46px, 8vw, 58px);
-    height: clamp(46px, 8vw, 58px);
-    border: 3px solid rgba(95, 99, 160, 0.95);
-    border-radius: 50%;
-    background: linear-gradient(180deg, #5fd6ff 0%, #15a7ee 100%);
+    width: clamp(58px, 10.8vw, 80px);
+    height: clamp(58px, 10.8vw, 80px);
+    border: none;
+    border-radius: clamp(16px, 3vw, 24px);
+    background: linear-gradient(180deg, #4368dc 0%, #2c49c4 100%);
     color: #fff;
-    font-size: clamp(24px, 4.6vw, 34px);
+    font-size: clamp(34px, 6vw, 46px);
+    font-weight: 900;
     line-height: 1;
     font-variant-emoji: text;
     cursor: pointer;
     box-shadow:
-        inset 0 2px 0 rgba(255, 255, 255, 0.45),
-        inset 0 -3px 0 rgba(9, 72, 138, 0.42),
-        0 5px 12px rgba(34, 56, 94, 0.34);
+        inset 0 1px 0 rgba(173, 193, 255, 0.56),
+        inset 0 -2px 0 rgba(23, 41, 120, 0.5),
+        0 6px 0 #1f31a2;
 }
 
 .icon-btn-restart {
-    border-radius: 18px;
-    width: clamp(50px, 8.2vw, 64px);
-    height: clamp(50px, 8.2vw, 64px);
-    font-size: clamp(28px, 4.6vw, 38px);
-    border-color: #b88c1e;
-    background:
-        radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.42) 0, rgba(255, 255, 255, 0) 45%),
-        linear-gradient(180deg, #ffd95f 0%, #ffb425 100%);
-    box-shadow:
-        inset 0 2px 0 rgba(255, 255, 255, 0.5),
-        inset 0 -3px 0 rgba(179, 121, 18, 0.45),
-        0 5px 12px rgba(128, 91, 18, 0.35);
+    border-radius: clamp(16px, 3vw, 24px);
 }
 
 .icon-btn:active {
-    transform: scale(0.95);
+    transform: translateY(2px);
+    box-shadow:
+        inset 0 1px 0 rgba(173, 193, 255, 0.52),
+        inset 0 -1px 0 rgba(23, 41, 120, 0.5),
+        0 3px 0 #1f31a2;
 }
 
 #back-btn {
-    position: fixed;
-    left: clamp(8px, 2vw, 16px);
-    top: calc(max(10px, env(safe-area-inset-top)) + 20px + clamp(68px, 10vw, 84px));
+    position: static;
 }
 
 /* ── рамка вокруг доски ───────────────────────────────────────────────── */
@@ -1335,54 +1304,45 @@ body.explosion-shake {
 
 @media (max-width: 680px) {
     #hud-main {
-        width: calc(100vw - 32px);
-        min-height: 66px;
-        padding: 7px 8px 7px 78px;
+        width: calc(100vw - 28px);
+        min-height: 56px;
+        gap: clamp(10px, 4vw, 40px);
     }
 
     #level-badge {
-        width: 90px;
-        height: 90px;
-        left: -14px;
+        gap: 4px;
     }
 
     .badge-caption {
-        font-size: 13px;
+        font-size: clamp(20px, 7.2vw, 34px);
     }
 
     .badge-value {
-        font-size: 40px;
+        font-size: clamp(20px, 7.2vw, 34px);
     }
 
     #time-panel {
-        gap: 2px;
-    }
-
-    #time-caption {
-        font-size: 15px;
+        gap: 0;
     }
 
     #time-value {
-        font-size: 22px;
-        min-width: 102px;
-        padding: 4px 8px 5px;
+        font-size: clamp(28px, 8.5vw, 40px);
+        min-width: clamp(150px, 44vw, 196px);
+        padding: 8px 10px 10px;
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.9),
+            0 5px 0 #7fa8ea;
     }
 
     .icon-btn {
-        width: 42px;
-        height: 42px;
-        font-size: 22px;
+        width: clamp(50px, 13vw, 64px);
+        height: clamp(50px, 13vw, 64px);
+        font-size: clamp(28px, 8vw, 38px);
+        border-radius: 16px;
     }
 
     .icon-btn-restart {
-        width: 46px;
-        height: 46px;
-        font-size: 24px;
-        border-radius: 14px;
-    }
-
-    #back-btn {
-        top: calc(max(12px, env(safe-area-inset-top)) + 20px + 74px);
+        border-radius: 16px;
     }
 
     #soft-currency {
@@ -1429,15 +1389,12 @@ body.explosion-shake {
 
 @media (min-width: 900px) {
     #hud-top {
-        top: calc(max(16px, env(safe-area-inset-top)) + 20px);
+        top: calc(max(16px, env(safe-area-inset-top)) + 18px);
     }
 
     #hud-main {
-        width: min(540px, calc(100vw - 200px));
-    }
-
-    #back-btn {
-        left: max(14px, env(safe-area-inset-left));
+        width: min(580px, calc(100vw - 200px));
+        gap: clamp(24px, 6vw, 100px);
     }
 
     #soft-currency {
@@ -1451,39 +1408,32 @@ body.explosion-shake {
 
 @media (max-width: 420px) {
     #hud-main {
-        min-height: 62px;
-        padding-left: 72px;
+        width: calc(100vw - 20px);
+        min-height: 52px;
+        gap: 10px;
     }
 
     #level-badge {
-        width: 84px;
-        height: 84px;
-        left: -12px;
+        gap: 3px;
     }
 
     .badge-caption {
-        font-size: 12px;
+        font-size: clamp(20px, 8.4vw, 30px);
     }
 
     .badge-value {
-        font-size: 36px;
-    }
-
-    #time-caption {
-        font-size: 14px;
+        font-size: clamp(20px, 8.4vw, 30px);
     }
 
     #time-value {
-        font-size: 20px;
-        min-width: 96px;
+        font-size: clamp(26px, 8.6vw, 34px);
+        min-width: clamp(132px, 43vw, 172px);
         border-radius: 14px;
-        padding: 3px 8px 4px;
+        padding: 8px 8px 9px;
     }
 
     .icon-btn-restart {
-        width: 42px;
-        height: 42px;
-        font-size: 22px;
+        border-radius: 14px;
     }
 }
 
@@ -1832,11 +1782,11 @@ body {
 }
 
 #hud-top {
-    top: calc(max(16px, env(safe-area-inset-top)) + 8px);
+    top: calc(max(14px, env(safe-area-inset-top)) + 20px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: clamp(14px, 2.6vw, 20px);
     padding: 0 18px;
 }
 
@@ -1857,13 +1807,13 @@ body {
 
 .badge-caption,
 .badge-value {
-    font-size: clamp(30px, 6.3vw, 42px);
+    font-size: clamp(28px, 5.8vw, 40px);
     line-height: 1;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.03em;
 }
 
 #hud-main {
-    width: min(490px, calc(100vw - 52px));
+    width: min(500px, calc(100vw - 80px));
     min-height: auto;
     border: 0;
     border-radius: 0;
@@ -1871,14 +1821,14 @@ body {
     box-shadow: none;
     padding: 0;
     justify-content: space-between;
-    gap: 14px;
+    gap: clamp(18px, 3vw, 30px);
 }
 
 .icon-btn {
-    width: clamp(48px, 9.6vw, 62px);
-    height: clamp(48px, 9.6vw, 62px);
+    width: clamp(58px, 10vw, 70px);
+    height: clamp(58px, 10vw, 70px);
     border: 0;
-    border-radius: 18px;
+    border-radius: 20px;
     box-shadow: none;
     background: center/100% 100% no-repeat url('../UI/GameScreen/back_button.png');
     color: transparent;
@@ -1886,9 +1836,9 @@ body {
 }
 
 .icon-btn-restart {
-    width: clamp(48px, 9.6vw, 62px);
-    height: clamp(48px, 9.6vw, 62px);
-    border-radius: 18px;
+    width: clamp(58px, 10vw, 70px);
+    height: clamp(58px, 10vw, 70px);
+    border-radius: 20px;
     background-image: url('../UI/GameScreen/restart_button.png');
 }
 
@@ -1903,8 +1853,8 @@ body {
     left: auto;
     top: auto;
     transform: none;
-    width: clamp(150px, 29vw, 196px);
-    min-height: clamp(54px, 10vw, 70px);
+    width: clamp(170px, 30vw, 210px);
+    min-height: clamp(58px, 10vw, 74px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1927,9 +1877,9 @@ body {
     background: transparent;
     box-shadow: none;
     color: #0c4295;
-    font-size: clamp(30px, 6.4vw, 42px);
+    font-size: clamp(34px, 6.8vw, 48px);
     font-weight: 700;
-    padding: 0 0 3px;
+    padding: 0 0 2px;
 }
 
 #frame {
@@ -2105,22 +2055,34 @@ body {
 
 @media (max-width: 680px) {
     #hud-top {
-        top: calc(max(12px, env(safe-area-inset-top)) + 8px);
-        gap: 8px;
+        top: calc(max(12px, env(safe-area-inset-top)) + 14px);
+        gap: 12px;
     }
 
     .badge-caption,
     .badge-value {
-        font-size: clamp(24px, 6vw, 34px);
+        font-size: clamp(22px, 6.4vw, 32px);
     }
 
     #hud-main {
-        width: calc(100vw - 54px);
-        gap: 10px;
+        width: calc(100vw - 40px);
+        gap: 14px;
+    }
+
+    .icon-btn,
+    .icon-btn-restart {
+        width: clamp(52px, 13.5vw, 62px);
+        height: clamp(52px, 13.5vw, 62px);
+        border-radius: 16px;
+    }
+
+    #time-panel {
+        width: clamp(150px, 42vw, 188px);
+        min-height: clamp(52px, 13vw, 66px);
     }
 
     #time-value {
-        font-size: clamp(24px, 6vw, 34px);
+        font-size: clamp(30px, 8.2vw, 42px);
     }
 
     #boosters-bar {

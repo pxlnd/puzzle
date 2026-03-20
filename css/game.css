@@ -1028,6 +1028,17 @@ body.explosion-shake { animation: screen-shake 0.38s ease; }
   text-align: center;
 }
 
+/* hidden by request: remove currency/lives panel from the game field */
+#soft-currency,
+#hearts {
+  display: none !important;
+}
+
+/* hidden by request: remove debug level switcher from bottom-left */
+#level-nav {
+  display: none !important;
+}
+
 /* ── level nav (debug, bottom-left) ─────────────────────────────────── */
 #level-nav {
   position: fixed;

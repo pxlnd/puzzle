@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+  <title>VIP Membership</title>
+</head>
+<body>
+  <main class="container">
+    <button class="close-btn" type="button" data-action="close" aria-label="Close offer">
+      <img src="Sprites/close.png" alt="Close" />
+    </button>
+
+    <header class="header">
+      <img src="Sprites/vip.png" class="header-image" alt="VIP Membership" />
+    </header>
+
+    <p class="subtitle" data-i18n="subtitle">Unlimited puzzles &amp; exclusive rewards</p>
+
+    <section class="card" aria-label="Subscription features">
+      <div class="item">
+        <img src="Sprites/ads.png" alt="No ads" />
+        <span class="item-text" data-feature-key="noAds">No Ads</span>
+      </div>
+      <div class="item">
+        <img src="Sprites/heart.png" alt="Infinite hearts" />
+        <span class="item-text" data-feature-key="infiniteHearts">Infinite hearts</span>
+      </div>
+      <div class="item">
+        <img src="Sprites/booster.png" alt="Daily boosters" />
+        <span class="item-text" data-feature-key="boostersEveryDay">5 Boosters Every Day</span>
+      </div>
+      <div class="item">
+        <img src="Sprites/puzzle.png" alt="Premium levels" />
+        <span class="item-text" data-feature-key="premiumLevels">Unique Premium Levels</span>
+      </div>
+      <div class="item">
+        <img src="Sprites/calendar.png" alt="Early access" />
+        <span class="item-text" data-feature-key="earlyAccess">Early Access to New Content</span>
+      </div>
+      <div class="item">
+        <img src="Sprites/present.png" alt="Extra rewards" />
+        <span class="item-text" data-feature-key="rewardsAndBonuses">Extra Rewards &amp; Bonuses</span>
+      </div>
+    </section>
+
+    <section class="trial" aria-label="Trial details">
+      <img class="trial-bg" src="Sprites/stripe.png" alt="" aria-hidden="true" />
+      <span class="trial-headline" data-i18n="trial.headline">FREE 3 DAYS TRIAL</span>
+      <p class="trial-description" data-i18n="trial.description">Then $4.99 / month</p>
+    </section>
+
+    <button class="subscribe-btn" type="button" aria-label="Subscribe">
+      <img src="Sprites/btn.png" alt="Subscribe button" />
+      <span class="subscribe-btn-text" data-i18n="subscribeButton">SUBSCRIBE</span>
+    </button>
+
+    <footer class="footer">
+      <button class="footer-button" type="button" data-i18n="footer.restorePurchases">Restore Purchases</button>
+      <span class="footer-separator">|</span>
+      <button class="footer-button" type="button" data-i18n="footer.termsOfUse">Terms of Use</button>
+      <span class="footer-separator">|</span>
+      <button class="footer-button" type="button" data-i18n="footer.privacyPolicy">Privacy Policy</button>
+    </footer>
+
+    <p class="note" data-i18n="note">
+      All subscriptions will automatically renew unless they are canceled
+    </p>
+  </main>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

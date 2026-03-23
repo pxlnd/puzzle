@@ -101,10 +101,19 @@
     window.location.href = 'uniwebview://close';
   }
 
+  function purchaseSubscription() {
+    window.location.href = 'uniwebview://purchase';
+  }
+
   function bindEvents() {
     const closeButton = document.querySelector('[data-action="close"]');
     if (closeButton) {
       closeButton.addEventListener('click', closePopup);
+    }
+
+    const subscribeButton = document.querySelector('.subscribe-btn');
+    if (subscribeButton) {
+      subscribeButton.addEventListener('click', purchaseSubscription);
     }
   }
 

@@ -84,6 +84,7 @@ var timeOutCoinsCost = 0;
 var heartsMaxCount = 5;
 var heartsRecoverySeconds = 0;
 var heartsRecoveryTimerId = null;
+var livesTimerText = '--:--';
 
 var tutorial = {
   levelIndex: 0,
@@ -202,6 +203,8 @@ function clearLevelTimer() {
 function setOutTimeOverlay(active) {
   outTimeActive = active;
   if (active) {
+    updateCoinsView();
+    updateHeartsView();
     updateOutTimeSoftButtonState();
     outTimeOverlay.style.display = 'flex';
     outTimeOverlay.setAttribute('aria-hidden', 'false');
@@ -2065,6 +2068,8 @@ function stopHeartsRecoveryTicker() {
 
 function updateLoseHeartsStatus() {
   var statusEl = document.getElementById('lose-heart-status');
+  var countEl = document.getElementById('lose-heart-count');
+  if (countEl) countEl.textContent = String(Math.max(0, heartsCount));
   if (!statusEl) return;
   if (heartsCount >= heartsMaxCount) {
     stopHeartsRecoveryTicker();
@@ -2072,8 +2077,8 @@ function updateLoseHeartsStatus() {
     statusEl.classList.remove('not-full');
     return;
   }
-  var timerText = heartsRecoverySeconds > 0 ? formatSeconds(heartsRecoverySeconds) : '--:--';
-  statusEl.textContent = heartsCount + '  ' + timerText;
+  var timerText = livesTimerText || (heartsRecoverySeconds > 0 ? formatSeconds(heartsRecoverySeconds) : '--:--');
+  statusEl.textContent = timerText;
   statusEl.classList.add('not-full');
 }
 
@@ -2109,8 +2114,12 @@ function setCoins(value) {
 }
 
 function setHearts(value) {
-  heartsCount = parseInt(value)
+  var nextHearts = Math.max(0, parseInt(value, 10) || 0);
+  if (nextHearts === heartsCount) return;
+  heartsCount = nextHearts;
   updateHeartsView();
+  setTextById('lose-heart-count', heartsCount);
+  updateLoseHeartsStatus();
 }
 
 function setTimeOutCoinsCost(value) {
@@ -2136,6 +2145,10 @@ function setMaxHearts(value) {
   setHeartsMax(value);
 }
 
+function setMaxLives(value) {
+  setHeartsMax(value);
+}
+
 function setHeartRecoverySeconds(value) {
   heartsRecoverySeconds = Math.max(0, parseInt(value, 10) || 0);
   if (heartsRecoverySeconds > 0) {
@@ -2148,6 +2161,11 @@ function setHeartRecoverySeconds(value) {
 
 function setHeartsRecoverySeconds(value) {
   setHeartRecoverySeconds(value);
+}
+
+function setLivesTimer(value) {
+  livesTimerText = String(value || '--:--');
+  if (heartsCount < heartsMaxCount) updateLoseHeartsStatus();
 }
 
 // ── Nav ───────────────────────────────────────────────────────────────────────

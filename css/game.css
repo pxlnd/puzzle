@@ -2442,6 +2442,21 @@ body {
     cursor: pointer;
 }
 
+.out-time-action-btn.is-disabled,
+.out-time-action-btn:disabled {
+    cursor: default;
+}
+
+.out-time-action-btn.is-disabled img,
+.out-time-action-btn:disabled img {
+    filter: grayscale(0.15) brightness(0.78);
+}
+
+.out-time-action-btn.is-disabled #out-time-coin-cost,
+.out-time-action-btn:disabled #out-time-coin-cost {
+    opacity: 0.78;
+}
+
 .out-time-action-btn img {
     width: 100%;
     height: auto;
@@ -2449,7 +2464,7 @@ body {
 }
 
 #out-time-soft img {
-    transform: translateX(6px);
+    transform: translateX(-2px);
 }
 
 #out-time-coin-cost {

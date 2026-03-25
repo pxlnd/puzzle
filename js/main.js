@@ -202,6 +202,7 @@ function clearLevelTimer() {
 function setOutTimeOverlay(active) {
   outTimeActive = active;
   if (active) {
+    updateOutTimeSoftButtonState();
     outTimeOverlay.style.display = 'flex';
     outTimeOverlay.setAttribute('aria-hidden', 'false');
     requestAnimationFrame(function() { outTimeOverlay.style.opacity = '1'; });
@@ -2094,6 +2095,7 @@ function boosterRewardResult(value) {
 function updateCoinsView() {
   setTextById('sc-value', coinsCount);
   setTextById('lose-coins-value', coinsCount);
+  updateOutTimeSoftButtonState();
 }
 
 function updateHeartsView() {
@@ -2102,7 +2104,7 @@ function updateHeartsView() {
 }
 
 function setCoins(value) {
-  coinsCount = parseInt(value)
+  coinsCount = Math.max(0, parseInt(value, 10) || 0);
   updateCoinsView();
 }
 
@@ -2112,8 +2114,17 @@ function setHearts(value) {
 }
 
 function setTimeOutCoinsCost(value) {
-  timeOutCoinsCost = parseInt(value);
+  timeOutCoinsCost = Math.max(0, parseInt(value, 10) || 0);
   setTextById('out-time-coin-cost', timeOutCoinsCost);
+  updateOutTimeSoftButtonState();
+}
+
+function updateOutTimeSoftButtonState() {
+  if (!outTimeSoftBtn) return;
+  var isDisabled = coinsCount < timeOutCoinsCost;
+  outTimeSoftBtn.disabled = isDisabled;
+  outTimeSoftBtn.classList.toggle('is-disabled', isDisabled);
+  outTimeSoftBtn.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
 }
 
 function setHeartsMax(value) {

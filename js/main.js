@@ -63,6 +63,7 @@ var outTimeOverlay = document.getElementById('out-time-overlay');
 var outTimeRewardBtn = document.getElementById('out-time-reward');
 var outTimeSoftBtn = document.getElementById('out-time-soft');
 var outTimeRestartBtn = document.getElementById('out-time-restart');
+var outTimeCloseBtn = document.getElementById('out-time-close');
 var outTimeActive = false;
 var boosterRewardOverlay = document.getElementById('booster-reward-overlay');
 var boosterRewardIcon = document.getElementById('booster-reward-icon');
@@ -80,6 +81,9 @@ var addTimeReward = false;
 var coinsCount = 0;
 var heartsCount = 0;
 var timeOutCoinsCost = 0;
+var heartsMaxCount = 5;
+var heartsRecoverySeconds = 0;
+var heartsRecoveryTimerId = null;
 
 var tutorial = {
   levelIndex: 0,
@@ -2026,6 +2030,52 @@ function rewardResult(value) {
   }
 }
 
+function setTextById(id, value) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = value;
+}
+
+function formatSeconds(value) {
+  var total = Math.max(0, parseInt(value, 10) || 0);
+  var mm = Math.floor(total / 60);
+  var ss = total % 60;
+  return String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
+}
+
+function ensureHeartsRecoveryTicker() {
+  if (heartsRecoveryTimerId || heartsRecoverySeconds <= 0) return;
+  heartsRecoveryTimerId = setInterval(function() {
+    if (heartsRecoverySeconds <= 0) {
+      clearInterval(heartsRecoveryTimerId);
+      heartsRecoveryTimerId = null;
+      return;
+    }
+    heartsRecoverySeconds -= 1;
+    updateHeartsView();
+  }, 1000);
+}
+
+function stopHeartsRecoveryTicker() {
+  if (!heartsRecoveryTimerId) return;
+  clearInterval(heartsRecoveryTimerId);
+  heartsRecoveryTimerId = null;
+}
+
+function updateLoseHeartsStatus() {
+  var statusEl = document.getElementById('lose-heart-status');
+  if (!statusEl) return;
+  if (heartsCount >= heartsMaxCount) {
+    stopHeartsRecoveryTicker();
+    statusEl.textContent = 'FULL';
+    statusEl.classList.remove('not-full');
+    return;
+  }
+  var timerText = heartsRecoverySeconds > 0 ? formatSeconds(heartsRecoverySeconds) : '--:--';
+  statusEl.textContent = heartsCount + '  ' + timerText;
+  statusEl.classList.add('not-full');
+}
+
 function addBoosterRewardCharge(type) {
   if (!hasBoosterType(type)) return;
   addBoosterBalance(type, 1);
@@ -2042,11 +2092,13 @@ function boosterRewardResult(value) {
 }
 
 function updateCoinsView() {
-  document.getElementById('sc-value').innerHTML = coinsCount;
+  setTextById('sc-value', coinsCount);
+  setTextById('lose-coins-value', coinsCount);
 }
 
 function updateHeartsView() {
-  document.getElementById('heart-value').innerHTML = heartsCount;
+  setTextById('heart-value', heartsCount);
+  updateLoseHeartsStatus();
 }
 
 function setCoins(value) {
@@ -2061,7 +2113,30 @@ function setHearts(value) {
 
 function setTimeOutCoinsCost(value) {
   timeOutCoinsCost = parseInt(value);
-  document.getElementById('out-time-soft').innerHTML = timeOutCoinsCost;
+  setTextById('out-time-coin-cost', timeOutCoinsCost);
+}
+
+function setHeartsMax(value) {
+  heartsMaxCount = Math.max(0, parseInt(value, 10) || 0);
+  updateHeartsView();
+}
+
+function setMaxHearts(value) {
+  setHeartsMax(value);
+}
+
+function setHeartRecoverySeconds(value) {
+  heartsRecoverySeconds = Math.max(0, parseInt(value, 10) || 0);
+  if (heartsRecoverySeconds > 0) {
+    ensureHeartsRecoveryTicker();
+  } else {
+    stopHeartsRecoveryTicker();
+  }
+  updateHeartsView();
+}
+
+function setHeartsRecoverySeconds(value) {
+  setHeartRecoverySeconds(value);
 }
 
 // ── Nav ───────────────────────────────────────────────────────────────────────
@@ -2126,7 +2201,7 @@ if (boosterRewardCloseBtn) {
 }
 
 outTimeSoftBtn.addEventListener('click', function() {
-  if (coinsCount > timeOutCoinsCost) {
+  if (coinsCount >= timeOutCoinsCost) {
     coinsCount -= timeOutCoinsCost;
     updateCoinsView();
     addBonusTime(60);
@@ -2141,6 +2216,13 @@ outTimeRestartBtn.addEventListener('click', function() {
     setOutTimeOverlay(false);
   }
 });
+
+if (outTimeCloseBtn) {
+  outTimeCloseBtn.addEventListener('click', function() {
+    window.location = "uniwebview://close?coins=" + coinsCount.toString() + "&hearts=" + heartsCount.toString();
+    setOutTimeOverlay(false);
+  });
+}
 
 var boosterTutorialBtn = document.getElementById('booster-tutorial-btn');
 if (boosterTutorialBtn) {
@@ -2226,4 +2308,7 @@ document.addEventListener('pointerdown', function(e) {
 
 loadLevel(0);
 updateNavLabel();
+updateCoinsView();
+updateHeartsView();
+setTimeOutCoinsCost(timeOutCoinsCost);
 fadeIn();

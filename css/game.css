@@ -2400,7 +2400,7 @@ body {
 
 #out-time-modal {
     width: min(88vw, 470px);
-    margin-top: clamp(70px, 11vh, 96px);
+    margin-top: clamp(84px, 13vh, 112px);
     border-radius: 28px;
     border: 2px solid #d9deea;
     background: #eceef4;
@@ -2419,7 +2419,7 @@ body {
 
 .lose-offer {
     width: min(79.2vw, 423px);
-    margin-top: -10px;
+    margin-top: -26px;
     position: relative;
     max-width: 100%;
 }

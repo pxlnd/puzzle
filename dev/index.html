@@ -95,12 +95,39 @@
     </div>
   </div>
   <div id="out-time-overlay" style="display:none;" aria-hidden="true">
+    <div class="lose-top-bar" aria-label="Resources">
+      <div class="lose-resource lose-resource-hearts">
+        <span id="lose-heart-count">0</span>
+        <span id="lose-heart-status">FULL</span>
+      </div>
+      <div class="lose-resource lose-resource-coins">
+        <span id="lose-coins-value">0</span>
+      </div>
+    </div>
     <div id="out-time-modal">
-      <div class="out-time-title">Out of Time!</div>
-      <div class="out-time-placeholder">тут будет отправка на гейм овер скрин</div>
-      <button id="out-time-reward" class="out-time-cta">+60 сек(рв)</button>
-      <button id="out-time-soft" class="out-time-cta"></button>
-      <button id="out-time-restart" class="out-time-cta">Restart</button>
+      <button id="out-time-close" class="out-time-close" aria-label="Close">×</button>
+      <div class="out-time-title">OUT OF TIME!</div>
+      <div class="out-time-subtitle"><span>Revive</span> to keep playing</div>
+      <div class="out-time-card">
+        <img src="UI/LoseScreen/timer.png" class="out-time-clock-image" alt="+60 seconds">
+        <div class="out-time-actions">
+          <button id="out-time-soft" class="out-time-action-btn" aria-label="Revive for coins">
+            <img src="UI/LoseScreen/coins_button.png" alt="">
+            <span id="out-time-coin-cost">0</span>
+          </button>
+          <button id="out-time-reward" class="out-time-action-btn" aria-label="Revive free by ad">
+            <img src="UI/LoseScreen/ads_button.png" alt="">
+            <span id="out-time-reward-label">FREE</span>
+          </button>
+        </div>
+      </div>
+      <button id="out-time-restart" class="out-time-hidden-action" aria-hidden="true" tabindex="-1">Restart</button>
+    </div>
+    <div class="lose-offer">
+      <img src="UI/LoseScreen/Offer.png" alt="Premium offer">
+      <button id="out-time-purchase" class="lose-offer-purchase" type="button" aria-label="Purchase premium">
+        <img src="UI/LoseScreen/purchase_button.png" alt="">
+      </button>
     </div>
   </div>
   <div id="booster-reward-overlay" style="display:none;" aria-hidden="true">

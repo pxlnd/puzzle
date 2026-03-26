@@ -1,7 +1,7 @@
 // ── Уровень 31 ──────────────────────────────────────────────────
 LEVELS.push({
   cols: 9, rows: 6,
-  time: 300,
+  time: 192,
   walls: [
     { color: 'cyan', dir: 'top', col: 0, cells: 3 },
     { color: 'green', dir: 'top', col: 3, cells: 3 },

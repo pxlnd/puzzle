@@ -1,7 +1,7 @@
 // ── Уровень 16 ──────────────────────────────────────────────────
 LEVELS.push({
   cols: 7, rows: 7,
-  time: 170,
+  time: 180,
   walls: [
     { color: 'green', dir: 'top', col: 0, cells: 3 },
     { color: 'orange', dir: 'top', col: 3, cells: 2 },

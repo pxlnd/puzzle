@@ -64,6 +64,7 @@ var outTimeRewardBtn = document.getElementById('out-time-reward');
 var outTimeSoftBtn = document.getElementById('out-time-soft');
 var outTimeRestartBtn = document.getElementById('out-time-restart');
 var outTimeCloseBtn = document.getElementById('out-time-close');
+var outTimePurchaseBtn = document.getElementById('out-time-purchase');
 var outTimeActive = false;
 var boosterRewardOverlay = document.getElementById('booster-reward-overlay');
 var boosterRewardIcon = document.getElementById('booster-reward-icon');
@@ -2250,6 +2251,12 @@ if (outTimeCloseBtn) {
   outTimeCloseBtn.addEventListener('click', function() {
     window.location = "uniwebview://close?coins=" + coinsCount.toString() + "&hearts=" + heartsCount.toString();
     setOutTimeOverlay(false);
+  });
+}
+
+if (outTimePurchaseBtn) {
+  outTimePurchaseBtn.addEventListener('click', function() {
+    window.location = "uniwebview://subscription_request";
   });
 }
 

@@ -2282,7 +2282,7 @@ body {
 #out-time-overlay {
     align-items: center;
     justify-content: center;
-    gap: 0;
+    gap: clamp(10px, 2vh, 16px);
     padding: max(18px, env(safe-area-inset-top)) 12px max(18px, env(safe-area-inset-bottom));
     background: rgba(90, 97, 140, 0.94);
     border: 0;
@@ -2290,7 +2290,7 @@ body {
 
 .lose-top-bar {
     position: absolute;
-    top: max(44px, env(safe-area-inset-top));
+    top: max(28px, env(safe-area-inset-top));
     left: 50%;
     transform: translateX(-50%);
     width: min(94vw, 520px);
@@ -2322,7 +2322,7 @@ body {
 
 #lose-heart-count {
     position: absolute;
-    left: clamp(22px, 4.2vw, 29px);
+    left: clamp(29px, 5.2vw, 36px);
     top: 50%;
     transform: translate(-50%, -50%);
     min-width: 1ch;
@@ -2400,6 +2400,7 @@ body {
 
 #out-time-modal {
     width: min(88vw, 470px);
+    margin-top: clamp(70px, 11vh, 96px);
     border-radius: 28px;
     border: 2px solid #d9deea;
     background: #eceef4;
@@ -2407,11 +2408,44 @@ body {
         inset 0 -4px 0 #7fa8e6,
         0 18px 30px rgba(8, 14, 41, 0.34);
     padding: clamp(18px, 5vw, 24px) clamp(16px, 4vw, 18px) clamp(22px, 5vw, 26px);
+    scale: 0.9;
+    transform-origin: center top;
 }
 
 #out-time-modal,
 #out-time-modal * {
     font-family: 'Open Sans', sans-serif !important;
+}
+
+.lose-offer {
+    width: min(79.2vw, 423px);
+    margin-top: -10px;
+    position: relative;
+    max-width: 100%;
+}
+
+.lose-offer img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.lose-offer-purchase {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    margin: clamp(-52px, -7vh, -40px) auto 0;
+    width: min(52.2vw, 248px);
+    display: block;
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.lose-offer-purchase img {
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
 .out-time-close {
@@ -2574,6 +2608,15 @@ body {
 
     #out-time-modal {
         width: calc(100vw - 16px);
+    }
+
+    .lose-offer {
+        width: calc((100vw - 16px) * 0.9);
+    }
+
+    .lose-offer-purchase {
+        width: min(55.8vw, 225px);
+        margin-top: clamp(-48px, -8vh, -34px);
     }
 
     .out-time-close {

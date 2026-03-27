@@ -124,11 +124,18 @@ body {
   border: 0;
   background: none;
   cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .subscribe-btn img {
   width: 100%;
   border-radius: 50px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
 }
 
 .subscribe-btn-text {
@@ -142,6 +149,16 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   -webkit-text-stroke: 1px #336105;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
+}
+
+.subscribe-btn:focus,
+.subscribe-btn:focus-visible,
+.subscribe-btn:active {
+  outline: none;
+  box-shadow: none;
 }
 
 .footer {

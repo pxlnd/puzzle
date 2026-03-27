@@ -1250,10 +1250,10 @@ body.explosion-shake {
 
 /* ── boosters ────────────────────────────────────────────────────────── */
 #boosters-bar {
-    position: absolute;
+    position: fixed;
     left: 50%;
-    top: calc(100% + 30px);
-    bottom: auto;
+    top: auto;
+    bottom: 60px;
     transform: translateX(-50%);
     z-index: 10001;
     display: flex;
@@ -1905,7 +1905,8 @@ body {
 }
 
 #boosters-bar {
-    top: calc(100% + 50px);
+    top: auto;
+    bottom: 60px;
     gap: 60px;
 }
 

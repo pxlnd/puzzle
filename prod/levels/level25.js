@@ -1,7 +1,7 @@
 // ── Уровень 25 ──────────────────────────────────────────────────
 LEVELS.push({
   cols: 8, rows: 9,
-  time: 320,
+  time: 192,
   walls: [
     { color: 'cyan', dir: 'top', col: 0, cells: 3 },
     { color: 'purple', dir: 'top', col: 3, cells: 2 },

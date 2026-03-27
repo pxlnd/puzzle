@@ -1,7 +1,7 @@
 // ── Уровень 26 ──────────────────────────────────────────────────
 LEVELS.push({
   cols: 5, rows: 6,
-  time: 220,
+  time: 192,
   walls: [
     { color: 'purple', dir: 'top', col: 0, cells: 2 },
     { color: 'cyan', dir: 'top', col: 2, cells: 2 },

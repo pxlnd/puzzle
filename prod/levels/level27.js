@@ -1,7 +1,7 @@
 // ── Уровень 27 ──────────────────────────────────────────────────
 LEVELS.push({
   cols: 10, rows: 10,
-  time: 430,
+  time: 192,
   walls: [
     { color: 'yellow', dir: 'top', col: 3, cells: 2 },
     { color: 'blue', dir: 'left', row: 3, cells: 3 },

@@ -1,7 +1,7 @@
 // ── Уровень 32 ──────────────────────────────────────────────────
 LEVELS.push({
   cols: 10, rows: 11,
-  time: 520,
+  time: 192,
   walls: [
     { color: 'yellow', dir: 'top', col: 0, cells: 2 },
     { color: 'purple', dir: 'top', col: 2, cells: 3 },

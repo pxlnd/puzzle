@@ -1,14 +1,14 @@
 // ── Уровень 13 ──────────────────────────────────────────────────
 LEVELS.push({
   cols: 7, rows: 10,
-  time: 250,
+  time: 180,
   walls: [
     { color: 'cyan', dir: 'top', col: 0, cells: 3 },
     { color: 'green', dir: 'top', col: 4, cells: 3 },
     { color: 'purple', dir: 'left', row: 0, cells: 2 },
     { color: 'purple', dir: 'left', row: 7, cells: 2 },
     { color: 'red', dir: 'right', row: 0, cells: 2 },
-    { color: 'orange', dir: 'right', row: 7, cells: 2 },
+    { color: 'orange', dir: 'right', row: 8, cells: 2 },
     { color: 'green', dir: 'bottom', col: 0, cells: 3 },
     { color: 'purple', dir: 'bottom', col: 4, cells: 3 },
   ],

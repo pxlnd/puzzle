@@ -1,7 +1,7 @@
 // ── Уровень 9 ──────────────────────────────────────────────────
 LEVELS.push({
   cols: 5, rows: 7,
-  time: 150,
+  time: 180,
   walls: [
     { color: 'green', dir: 'top', col: 3, cells: 2 },
     { color: 'cyan', dir: 'top', col: 0, cells: 2 },

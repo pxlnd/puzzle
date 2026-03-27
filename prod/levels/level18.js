@@ -1,7 +1,7 @@
 // ── Уровень 18 ──────────────────────────────────────────────────
 LEVELS.push({
   cols: 5, rows: 7,
-  time: 200,
+  time: 180,
   walls: [
     { color: 'yellow', dir: 'top', col: 3, cells: 2 },
     { color: 'green', dir: 'top', col: 0, cells: 1 },

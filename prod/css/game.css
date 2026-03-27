@@ -354,8 +354,7 @@ body.explosion-shake {
     cursor: grabbing;
     z-index: 20;
     transform: scale(1.07) translateY(-6px);
-    transition: left 0.07s ease-out, top 0.07s ease-out,
-        transform 0.12s ease-out, filter 0.12s ease-out;
+    transition: transform 0.12s ease-out, filter 0.12s ease-out;
 }
 
 .figure.returning {
@@ -426,7 +425,7 @@ body.explosion-shake {
     position: absolute;
     z-index: 5;
     pointer-events: none;
-    transition: left 0.05s ease-out, top 0.05s ease-out;
+    transition: none;
 }
 
 #ghost canvas {

@@ -65,6 +65,8 @@ var outTimeSoftBtn = document.getElementById('out-time-soft');
 var outTimeRestartBtn = document.getElementById('out-time-restart');
 var outTimeCloseBtn = document.getElementById('out-time-close');
 var outTimePurchaseBtn = document.getElementById('out-time-purchase');
+var loseTopBarEl = document.querySelector('.lose-top-bar');
+var loseOfferEl = document.querySelector('.lose-offer');
 var outTimeActive = false;
 var boosterRewardOverlay = document.getElementById('booster-reward-overlay');
 var boosterRewardIcon = document.getElementById('booster-reward-icon');
@@ -81,7 +83,10 @@ var freezeSceneOverlay = null;
 var addTimeReward = false;
 var coinsCount = 0;
 var heartsCount = 0;
-var timeOutCoinsCost = 0;
+var FORCE_REVIVE_COST_COINS = 50;
+var SHOW_LOSE_RESOURCES_BAR = false;
+var SHOW_LOSE_OFFER = false;
+var timeOutCoinsCost = FORCE_REVIVE_COST_COINS;
 var heartsMaxCount = 5;
 var heartsRecoverySeconds = 0;
 var heartsRecoveryTimerId = null;
@@ -2083,6 +2088,18 @@ function updateLoseHeartsStatus() {
   statusEl.classList.add('not-full');
 }
 
+function setLoseResourcesBarVisible(value) {
+  SHOW_LOSE_RESOURCES_BAR = value === true || String(value).toLowerCase() === 'true';
+  if (!loseTopBarEl) return;
+  loseTopBarEl.style.display = SHOW_LOSE_RESOURCES_BAR ? '' : 'none';
+}
+
+function setLoseOfferVisible(value) {
+  SHOW_LOSE_OFFER = value === true || String(value).toLowerCase() === 'true';
+  if (!loseOfferEl) return;
+  loseOfferEl.style.display = SHOW_LOSE_OFFER ? '' : 'none';
+}
+
 function addBoosterRewardCharge(type) {
   if (!hasBoosterType(type)) return;
   addBoosterBalance(type, 1);
@@ -2124,7 +2141,8 @@ function setHearts(value) {
 }
 
 function setTimeOutCoinsCost(value) {
-  timeOutCoinsCost = Math.max(0, parseInt(value, 10) || 0);
+  // Revive price is fixed by web side request and does not depend on incoming Unity values.
+  timeOutCoinsCost = FORCE_REVIVE_COST_COINS;
   setTextById('out-time-coin-cost', timeOutCoinsCost);
   updateOutTimeSoftButtonState();
 }
@@ -2347,4 +2365,6 @@ updateNavLabel();
 updateCoinsView();
 updateHeartsView();
 setTimeOutCoinsCost(timeOutCoinsCost);
+setLoseResourcesBarVisible(SHOW_LOSE_RESOURCES_BAR);
+setLoseOfferVisible(SHOW_LOSE_OFFER);
 fadeIn();

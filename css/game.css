@@ -1905,14 +1905,14 @@ body {
 }
 
 #boosters-bar {
-    top: calc(100% + 30px);
+    top: calc(100% + 50px);
     gap: 60px;
 }
 
 .booster-hud-btn {
     position: relative;
-    width: clamp(68px, 12.8vw, 90px);
-    height: clamp(68px, 12.8vw, 90px);
+    width: clamp(78px, 14.7vw, 104px);
+    height: clamp(78px, 14.7vw, 104px);
     border: 0;
     border-radius: clamp(18px, 3.6vw, 24px);
     background: center/100% 100% no-repeat url('../UI/GameScreen/booster_background.png');
@@ -1977,16 +1977,16 @@ body {
 
 .booster-hud-btn .booster-lvl {
     position: absolute;
-    right: -4px;
-    bottom: -4px;
-    width: 26px;
-    height: 26px;
+    right: -5px;
+    bottom: -5px;
+    width: 30px;
+    height: 30px;
     border: 0;
     background: center/100% 100% no-repeat url('../UI/GameScreen/number.png');
     color: #fff;
     font-family: Fedoka, 'Arial Black', Impact, sans-serif;
-    font-size: 15px;
-    line-height: 26px;
+    font-size: 17px;
+    line-height: 30px;
     text-align: center;
     padding: 0;
     box-shadow: none;
@@ -2000,10 +2000,10 @@ body {
 .booster-hud-btn .booster-lock {
     position: absolute;
     z-index: 3;
-    right: -6px;
-    bottom: -7px;
-    width: clamp(34px, 6.2vw, 42px);
-    height: clamp(37px, 6.8vw, 46px);
+    right: -7px;
+    bottom: -8px;
+    width: clamp(39px, 7.13vw, 48px);
+    height: clamp(43px, 7.82vw, 53px);
     display: none;
     background: center/100% 100% no-repeat url('../UI/GameScreen/lock.png');
 }
@@ -2041,17 +2041,17 @@ body {
 }
 
 .booster-hud-btn.unlocked .booster-lvl {
-    width: 26px;
-    height: 26px;
-    right: -4px;
-    bottom: -4px;
+    width: 30px;
+    height: 30px;
+    right: -5px;
+    bottom: -5px;
     border-radius: 0;
     background: center/100% 100% no-repeat url('../UI/GameScreen/number.png');
     color: #fff;
-    line-height: 26px;
+    line-height: 30px;
     padding: 0;
     box-shadow: none;
-    font-size: 16px;
+    font-size: 18px;
 }
 
 @media (max-width: 680px) {
@@ -2091,8 +2091,8 @@ body {
     }
 
     .booster-hud-btn {
-        width: 72px;
-        height: 72px;
+        width: 83px;
+        height: 83px;
     }
 }
 

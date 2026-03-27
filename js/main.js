@@ -2149,7 +2149,7 @@ function setTimeOutCoinsCost(value) {
 
 function updateOutTimeSoftButtonState() {
   if (!outTimeSoftBtn) return;
-  var isDisabled = coinsCount < timeOutCoinsCost;
+  var isDisabled = false;
   outTimeSoftBtn.disabled = isDisabled;
   outTimeSoftBtn.classList.toggle('is-disabled', isDisabled);
   outTimeSoftBtn.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
@@ -2249,11 +2249,7 @@ if (boosterRewardCloseBtn) {
 }
 
 outTimeSoftBtn.addEventListener('click', function() {
-  if (coinsCount >= timeOutCoinsCost) {
-    coinsCount -= timeOutCoinsCost;
-    updateCoinsView();
-    addBonusTime(60);
-  }
+  addBonusTime(60);
 });
 
 outTimeRestartBtn.addEventListener('click', function() {

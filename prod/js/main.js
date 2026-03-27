@@ -2340,9 +2340,14 @@ if (blackholeBtnHud) {
 }
 
 
+var resizeRafId = null;
 window.addEventListener('resize', function() {
-  resizePCanvas();
-  scaleGame();
+  if (resizeRafId) cancelAnimationFrame(resizeRafId);
+  resizeRafId = requestAnimationFrame(function() {
+    resizeRafId = null;
+    resizePCanvas();
+    scaleGame();
+  });
 });
 
 // ── UI click sound for all regular buttons ────────────────────────────────────

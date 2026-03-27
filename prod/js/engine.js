@@ -9,7 +9,10 @@ var gameScale = 1;
 var occupied  = new Map();
 var walls     = [];
 var blockers  = [];
+var figures   = [];
 var figureCount = 0;
+var figureCanvasCache = new Map();
+var blockerCanvasCache = new Map();
 var WALL_HEX = {
   green: '#4caf50',
   cyan: '#29b6f6',
@@ -36,11 +39,13 @@ function buildBoard(cols, rows) {
   board.style.gridTemplateColumns = 'repeat(' + cols + ', ' + CELL + 'px)';
   board.style.gridTemplateRows    = 'repeat(' + rows + ', ' + CELL + 'px)';
   board.innerHTML = '';
+  var fragment = document.createDocumentFragment();
   for (var i = 0; i < cols * rows; i++) {
     var d = document.createElement('div');
     d.className = 'board-cell';
-    board.appendChild(d);
+    fragment.appendChild(d);
   }
+  board.appendChild(fragment);
 }
 
 function cellPos(col, row) {
@@ -58,6 +63,7 @@ function makeWall(colorKey, dir, col, row, cells) {
   el._colorKey  = colorKey;
   el._dir       = dir;
   el._wallCells = cells;
+  el._highlightState = '';
   var horiz = dir === 'top' || dir === 'bottom';
   var w = horiz ? WALL_LONG_N : WALL_SHORT;
   var h = horiz ? WALL_SHORT  : WALL_LONG_N;
@@ -119,37 +125,57 @@ function drawFigureCanvas(canvas, cells, color, W, H, outlineColor) {
   var OUTLINE_PAD = 9;
   var canvasW = W + OUTLINE_PAD * 2;
   var canvasH = H + OUTLINE_PAD * 2;
+  var dpr = window.devicePixelRatio || 1;
+  var key = [
+    dpr.toFixed(2),
+    canvasW,
+    canvasH,
+    color,
+    outlineColor || '',
+    cells.map(function(c) { return c[0] + ':' + c[1]; }).join(';'),
+  ].join('|');
+  var cached = figureCanvasCache.get(key);
+  if (!cached) {
+    cached = document.createElement('canvas');
+    var cacheCtx = prepCanvas(cached, canvasW, canvasH);
+    cacheCtx.clearRect(0, 0, canvasW, canvasH);
+    if (outlineColor) {
+      var outlineOffsets = [
+        [ 8,  0], [-8,  0], [ 0,  8], [ 0, -8],
+        [ 6,  6], [-6,  6], [ 6, -6], [-6, -6]
+      ];
+      outlineOffsets.forEach(function(ofs) {
+        cacheCtx.save();
+        cacheCtx.translate(OUTLINE_PAD + ofs[0], OUTLINE_PAD + ofs[1]);
+        buildFigurePath(cacheCtx, cells);
+        cacheCtx.fillStyle = outlineColor;
+        cacheCtx.fill();
+        cacheCtx.restore();
+      });
+    }
+    cacheCtx.save();
+    cacheCtx.translate(OUTLINE_PAD, OUTLINE_PAD);
+    buildFigurePath(cacheCtx, cells);
+    cacheCtx.shadowColor = 'rgba(0,0,0,0.4)';
+    cacheCtx.shadowBlur = 10;
+    cacheCtx.shadowOffsetY = 4;
+    cacheCtx.fillStyle = color;
+    cacheCtx.fill();
+    cacheCtx.restore();
+    cacheCtx.save();
+    cacheCtx.translate(OUTLINE_PAD, OUTLINE_PAD);
+    cacheCtx.globalCompositeOperation = 'source-atop';
+    var hl = cacheCtx.createLinearGradient(0, 0, 0, H * 0.45);
+    hl.addColorStop(0, 'rgba(255,255,255,0.32)');
+    hl.addColorStop(1, 'rgba(255,255,255,0)');
+    cacheCtx.fillStyle = hl;
+    cacheCtx.fillRect(0, 0, W, H);
+    cacheCtx.restore();
+    figureCanvasCache.set(key, cached);
+  }
   var ctx = prepCanvas(canvas, canvasW, canvasH);
   ctx.clearRect(0, 0, canvasW, canvasH);
-  if (outlineColor) {
-    var outlineOffsets = [
-      [ 8,  0], [-8,  0], [ 0,  8], [ 0, -8],
-      [ 6,  6], [-6,  6], [ 6, -6], [-6, -6]
-    ];
-    outlineOffsets.forEach(function(ofs) {
-      ctx.save();
-      ctx.translate(OUTLINE_PAD + ofs[0], OUTLINE_PAD + ofs[1]);
-      buildFigurePath(ctx, cells);
-      ctx.fillStyle = outlineColor;
-      ctx.fill();
-      ctx.restore();
-    });
-  }
-  ctx.save();
-  ctx.translate(OUTLINE_PAD, OUTLINE_PAD);
-  buildFigurePath(ctx, cells);
-  ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.restore();
-  ctx.save();
-  ctx.translate(OUTLINE_PAD, OUTLINE_PAD);
-  ctx.globalCompositeOperation = 'source-atop';
-  var hl = ctx.createLinearGradient(0, 0, 0, H * 0.45);
-  hl.addColorStop(0, 'rgba(255,255,255,0.32)');
-  hl.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = hl; ctx.fillRect(0, 0, W, H);
-  ctx.restore();
+  ctx.drawImage(cached, 0, 0, canvasW, canvasH);
 }
 
 function normalizeHexColor(color) {
@@ -242,23 +268,38 @@ function redrawFigureCanvas(fig) {
 }
 
 function drawBlockerCanvas(canvas, cells, W, H) {
+  var dpr = window.devicePixelRatio || 1;
+  var key = [
+    dpr.toFixed(2),
+    W,
+    H,
+    cells.map(function(c) { return c[0] + ':' + c[1]; }).join(';'),
+  ].join('|');
+  var cached = blockerCanvasCache.get(key);
+  if (!cached) {
+    cached = document.createElement('canvas');
+    var cacheCtx = prepCanvas(cached, W, H);
+    buildFigurePath(cacheCtx, cells);
+    cacheCtx.save();
+    cacheCtx.shadowColor = 'rgba(0,0,0,0.32)';
+    cacheCtx.shadowBlur = 8;
+    cacheCtx.shadowOffsetY = 3;
+    cacheCtx.fillStyle = '#6c7888';
+    cacheCtx.fill();
+    cacheCtx.restore();
+    cacheCtx.save();
+    cacheCtx.globalCompositeOperation = 'source-atop';
+    var hl = cacheCtx.createLinearGradient(0, 0, 0, H * 0.42);
+    hl.addColorStop(0, 'rgba(255,255,255,0.22)');
+    hl.addColorStop(1, 'rgba(255,255,255,0)');
+    cacheCtx.fillStyle = hl;
+    cacheCtx.fillRect(0, 0, W, H);
+    cacheCtx.restore();
+    blockerCanvasCache.set(key, cached);
+  }
   var ctx = prepCanvas(canvas, W, H);
-  buildFigurePath(ctx, cells);
-  ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.32)';
-  ctx.shadowBlur = 8;
-  ctx.shadowOffsetY = 3;
-  ctx.fillStyle = '#6c7888';
-  ctx.fill();
-  ctx.restore();
-  ctx.save();
-  ctx.globalCompositeOperation = 'source-atop';
-  var hl = ctx.createLinearGradient(0, 0, 0, H * 0.42);
-  hl.addColorStop(0, 'rgba(255,255,255,0.22)');
-  hl.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = hl;
-  ctx.fillRect(0, 0, W, H);
-  ctx.restore();
+  ctx.clearRect(0, 0, W, H);
+  ctx.drawImage(cached, 0, 0, W, H);
 }
 
 // ── Ghost ─────────────────────────────────────────────────────────────────────
@@ -268,6 +309,11 @@ ghostEl.id = 'ghost';
 ghostEl.style.display = 'none';
 scene.appendChild(ghostEl);
 var ghostCanvas = null;
+var ghostState = {
+  figure: null,
+  valid: null,
+  shapeKey: '',
+};
 
 function showGhost(fig, col, row, valid) {
   var W = fig._maxC * (CELL + GAP) + CELL;
@@ -278,18 +324,29 @@ function showGhost(fig, col, row, valid) {
   ghostEl.style.left = p.x + 'px';
   ghostEl.style.top  = p.y + 'px';
   if (!ghostCanvas) { ghostCanvas = document.createElement('canvas'); ghostEl.appendChild(ghostCanvas); }
-  var ctx = prepCanvas(ghostCanvas, W, H);
-  ctx.clearRect(0, 0, W, H);
-  buildFigurePath(ctx, fig._cells);
-  ctx.fillStyle = valid ? 'rgba(255,255,255,0.22)' : 'rgba(255,60,60,0.28)';
-  ctx.fill();
-  ctx.strokeStyle = valid ? 'rgba(255,255,255,0.55)' : 'rgba(255,80,80,0.6)';
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  var nextShapeKey = fig._cells.map(function(c) { return c[0] + ':' + c[1]; }).join(';');
+  if (ghostState.figure !== fig || ghostState.valid !== valid || ghostState.shapeKey !== nextShapeKey) {
+    var ctx = prepCanvas(ghostCanvas, W, H);
+    ctx.clearRect(0, 0, W, H);
+    buildFigurePath(ctx, fig._cells);
+    ctx.fillStyle = valid ? 'rgba(255,255,255,0.22)' : 'rgba(255,60,60,0.28)';
+    ctx.fill();
+    ctx.strokeStyle = valid ? 'rgba(255,255,255,0.55)' : 'rgba(255,80,80,0.6)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ghostState.figure = fig;
+    ghostState.valid = valid;
+    ghostState.shapeKey = nextShapeKey;
+  }
   ghostEl.style.display = 'block';
 }
 
-function hideGhost() { ghostEl.style.display = 'none'; }
+function hideGhost() {
+  ghostEl.style.display = 'none';
+  ghostState.figure = null;
+  ghostState.valid = null;
+  ghostState.shapeKey = '';
+}
 
 // ── Particles ─────────────────────────────────────────────────────────────────
 
@@ -447,10 +504,16 @@ function createFigure(shapeName, color, startCol, startRow, moveAxis, outlineCol
     return null;
   }
   occupyCells(fig, fig._col, fig._row);
+  figures.push(fig);
   figureCount++;
   attachDrag(fig);
   if (typeof window.onFigureCreated === 'function') window.onFigureCreated(fig);
   return fig;
+}
+
+function removeFigureRef(fig) {
+  var idx = figures.indexOf(fig);
+  if (idx !== -1) figures.splice(idx, 1);
 }
 
 function createBlocker(shapeName, startCol, startRow) {
@@ -629,6 +692,7 @@ function attachDrag(fig) {
       fig.style.opacity    = '0';
       setTimeout(function() {
         fig.remove();
+        removeFigureRef(fig);
         if (typeof window.onFigureRemoved === 'function') window.onFigureRemoved(fig);
         figureCount--;
         if (figureCount === 0) {
@@ -675,22 +739,38 @@ function attachDrag(fig) {
       var candidates = walls.filter(function(w) { return near[w._dir]; });
       return pickBestWall(candidates);
     }
+    function setWallHighlightState(wall, state) {
+      if (!wall || wall._highlightState === state) return;
+      wall._highlightState = state;
+      if (state === 'hover-ok') {
+        wall.style.transform = 'scale(1.1)';
+        wall.style.filter = 'brightness(1.5) drop-shadow(0 0 14px rgba(255,255,255,0.9))';
+        return;
+      }
+      if (state === 'hover-bad') {
+        wall.style.transform = 'scale(1.1)';
+        wall.style.filter = 'brightness(0.55) saturate(0.3)';
+        return;
+      }
+      if (state === 'near-ok') {
+        wall.style.transform = 'scale(1.05)';
+        wall.style.filter = 'brightness(1.3) drop-shadow(0 0 8px rgba(255,255,255,0.6))';
+        return;
+      }
+      wall.style.transform = '';
+      wall.style.filter = '';
+    }
     function updateWallHighlight(rawX, rawY, pointerX, pointerY) {
       var w = hoveredWall(pointerX, pointerY);
       var n = w ? null : getNearWall(rawX, rawY);
       walls.forEach(function(wall) {
         if (wall === w) {
           var match = trySnapToWall(wall) !== null;
-          wall.style.transform = 'scale(1.1)';
-          wall.style.filter    = match
-            ? 'brightness(1.5) drop-shadow(0 0 14px rgba(255,255,255,0.9))'
-            : 'brightness(0.55) saturate(0.3)';
+          setWallHighlightState(wall, match ? 'hover-ok' : 'hover-bad');
         } else if (n && wall === n && trySnapToWall(wall) !== null) {
-          wall.style.transform = 'scale(1.05)';
-          wall.style.filter    = 'brightness(1.3) drop-shadow(0 0 8px rgba(255,255,255,0.6))';
+          setWallHighlightState(wall, 'near-ok');
         } else {
-          wall.style.transform = '';
-          wall.style.filter    = '';
+          setWallHighlightState(wall, '');
         }
       });
       return w;
@@ -730,14 +810,12 @@ function attachDrag(fig) {
       lastValidRow = curRow;
     }
 
-    var onMove = function(e) {
-      if (e.cancelable) e.preventDefault();
-      var xy = getXY(e);
+    function processMove(clientX, clientY) {
       var sr   = scene.getBoundingClientRect();
-      var rawX = (xy.x - grabX - sr.left) / gameScale;
-      var rawY = (xy.y - grabY - sr.top)  / gameScale;
-      var pointerX = (xy.x - sr.left) / gameScale;
-      var pointerY = (xy.y - sr.top) / gameScale;
+      var rawX = (clientX - grabX - sr.left) / gameScale;
+      var rawY = (clientY - grabY - sr.top)  / gameScale;
+      var pointerX = (clientX - sr.left) / gameScale;
+      var pointerY = (clientY - sr.top) / gameScale;
       if (fig._moveAxis === 'x') rawY = lockedRawY;
       if (fig._moveAxis === 'y') rawX = lockedRawX;
       var overWall = updateWallHighlight(rawX, rawY, pointerX, pointerY);
@@ -766,6 +844,21 @@ function attachDrag(fig) {
       fig.style.left = p.x + 'px';
       fig.style.top  = p.y + 'px';
       showGhost(fig, lastValidCol, lastValidRow, true);
+    }
+
+    var pendingMove = null;
+    var moveRafId = null;
+    function flushMove() {
+      moveRafId = null;
+      if (!pendingMove) return;
+      processMove(pendingMove.x, pendingMove.y);
+      pendingMove = null;
+    }
+    var onMove = function(e) {
+      if (e.cancelable) e.preventDefault();
+      var xy = getXY(e);
+      pendingMove = { x: xy.x, y: xy.y };
+      if (!moveRafId) moveRafId = requestAnimationFrame(flushMove);
     };
 
     var onUp = function(e) {
@@ -775,7 +868,15 @@ function attachDrag(fig) {
       fig.style.filter = '';
       fig.style.zIndex = 10;
       hideGhost();
-      walls.forEach(function(w) { w.style.transform = ''; w.style.filter = ''; });
+      walls.forEach(function(w) { setWallHighlightState(w, ''); });
+      if (moveRafId) {
+        cancelAnimationFrame(moveRafId);
+        moveRafId = null;
+      }
+      if (pendingMove) {
+        processMove(pendingMove.x, pendingMove.y);
+        pendingMove = null;
+      }
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup',   onUp);
       document.removeEventListener('touchmove', onMove);
@@ -879,7 +980,8 @@ function initLevel(cfg) {
   walls.length = 0;
   blockers.forEach(function(b) { b.remove(); });
   blockers.length = 0;
-  document.querySelectorAll('.figure').forEach(function(f) { f.remove(); });
+  figures.forEach(function(f) { f.remove(); });
+  figures.length = 0;
   occupied.clear();
   figureCount = 0;
 

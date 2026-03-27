@@ -867,8 +867,6 @@ function attachDrag(fig) {
       fig.classList.remove('dragging');
       fig.style.filter = '';
       fig.style.zIndex = 10;
-      hideGhost();
-      walls.forEach(function(w) { setWallHighlightState(w, ''); });
       if (moveRafId) {
         cancelAnimationFrame(moveRafId);
         moveRafId = null;
@@ -877,6 +875,8 @@ function attachDrag(fig) {
         processMove(pendingMove.x, pendingMove.y);
         pendingMove = null;
       }
+      hideGhost();
+      walls.forEach(function(w) { setWallHighlightState(w, ''); });
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup',   onUp);
       document.removeEventListener('touchmove', onMove);

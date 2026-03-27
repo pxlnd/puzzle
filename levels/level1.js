@@ -1,7 +1,7 @@
 // ── Уровень 1 ──────────────────────────────────────────────────
 LEVELS.push({
   cols: 6, rows: 7,
-  time: 200,
+  time: 120,
   walls: [
     { color: 'cyan', dir: 'top' },
     { color: 'purple', dir: 'bottom', col: 0 },

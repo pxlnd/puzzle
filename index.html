@@ -2,29 +2,55 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #b9c8e5;
+    }
+  </style>
   <title>Puzzle</title>
   <link rel="stylesheet" href="css/game.css">
 </head>
 <body>
   <div id="hud-top">
-    <button class="icon-btn" id="back-btn" aria-label="Back">←</button>
+    <div id="level-badge" aria-live="polite">
+      <span class="badge-caption">LEVEL</span>
+      <span class="badge-value" id="level-value">1</span>
+    </div>
     <div id="hud-main">
-      <div id="level-badge" aria-live="polite">
-        <span class="badge-caption">Level</span>
-        <span class="badge-value" id="level-value">1</span>
-      </div>
+      <button class="icon-btn" id="back-btn" aria-label="Back">&#x2190;&#xFE0E;</button>
       <div id="time-panel" aria-live="polite">
-        <div id="time-caption">Time</div>
+        <div id="time-caption">TIME</div>
         <div id="time-value">03:30</div>
       </div>
-      <button class="icon-btn icon-btn-restart" id="restart-btn" aria-label="Restart">↻</button>
+      <button class="icon-btn icon-btn-restart" id="restart-btn" aria-label="Restart">&#x21BB;&#xFE0E;</button>
     </div>
   </div>
 
   <div id="frame">
     <div id="scene">
       <div id="board"></div>
+    </div>
+    <div id="boosters-bar" aria-label="Boosters">
+      <button class="booster-btn booster-hud-btn" id="booster-freeze" aria-label="Booster locked level 8">
+        <span class="booster-icon"></span>
+        <span class="booster-lvl">Lv.8</span>
+        <span class="booster-lock" aria-hidden="true"></span>
+      </button>
+      <button class="booster-btn booster-hud-btn" id="booster-dynamite" aria-label="Booster locked level 13">
+        <span class="booster-icon"></span>
+        <span class="booster-lvl">Lv.13</span>
+        <span class="booster-lock" aria-hidden="true"></span>
+      </button>
+      <button class="booster-btn booster-hud-btn" id="booster-blackhole" aria-label="Booster locked level 18">
+        <span class="booster-icon"></span>
+        <span class="booster-lvl">Lv.18</span>
+        <span class="booster-lock" aria-hidden="true"></span>
+      </button>
     </div>
   </div>
 
@@ -36,27 +62,19 @@
     </div>
   </div>
 
-  <!-- Debug level nav (moved to bottom-left) -->
-  <div id="level-nav" aria-label="Level debug switcher">
-    <button class="nav-btn" id="prev-btn">◀</button>
-    <span id="level-label">Lvl 1</span>
-    <button class="nav-btn" id="next-btn">▶</button>
-    <button class="nav-btn" id="editor-btn" title="Level Builder">✎</button>
+  <div id="hearts">
+    <img src="heart.png" class="heart-heart" alt="">
+    <div class="heart-panel">
+      <span id="heart-value">50</span>
+    </div>
   </div>
 
-  <div id="boosters-bar" aria-label="Boosters">
-    <button class="booster-btn" id="booster-freeze" aria-label="Booster locked level 8">
-      <span class="booster-icon">🔒</span>
-      <span class="booster-lvl">Lv.8</span>
-    </button>
-    <button class="booster-btn" id="booster-dynamite" aria-label="Booster locked level 13">
-      <span class="booster-icon">🔒</span>
-      <span class="booster-lvl">Lv.13</span>
-    </button>
-    <button class="booster-btn" id="booster-blackhole" aria-label="Booster locked level 18">
-      <span class="booster-icon">🔒</span>
-      <span class="booster-lvl">Lv.18</span>
-    </button>
+  <!-- Debug level nav (moved to bottom-left) -->
+  <div id="level-nav" aria-label="Level debug switcher">
+    <button class="nav-btn" id="prev-btn">&#x25C0;&#xFE0E;</button>
+    <span id="level-label">Lvl 1</span>
+    <button class="nav-btn" id="next-btn">&#x25B6;&#xFE0E;</button>
+    <button class="nav-btn" id="editor-btn" title="Level Builder">✎</button>
   </div>
 
   <!-- Fade overlay -->
@@ -68,7 +86,7 @@
       <div id="unlock-figure-wrap">
         <div id="unlock-burst"></div>
         <canvas id="unlock-canvas"></canvas>
-        <div id="unlock-fig-arrow">↕</div>
+        <div id="unlock-fig-arrow">&#x2195;&#xFE0E;</div>
       </div>
       <p id="start-subtitle">You have unlocked the <b>Arrow Block!</b></p>
       <p id="start-desc">Moves only in the given direction!</p>
@@ -76,37 +94,91 @@
     </div>
   </div>
   <div id="out-time-overlay" style="display:none;" aria-hidden="true">
+    <div class="lose-top-bar" aria-label="Resources">
+      <div class="lose-resource lose-resource-hearts">
+        <span id="lose-heart-count">0</span>
+        <span id="lose-heart-status">FULL</span>
+      </div>
+      <div class="lose-resource lose-resource-coins">
+        <span id="lose-coins-value">0</span>
+      </div>
+    </div>
     <div id="out-time-modal">
-      <div class="out-time-title">Out of Time!</div>
-      <div class="out-time-placeholder">тут будет отправка на гейм овер скрин</div>
-      <button id="out-time-continue" class="out-time-cta">+60 сек</button>
+      <button id="out-time-close" class="out-time-close" aria-label="Close">×</button>
+      <div class="out-time-title">OUT OF TIME!</div>
+      <div class="out-time-subtitle"><span>Revive</span> to keep playing</div>
+      <div class="out-time-card">
+        <img src="UI/LoseScreen/timer.png" class="out-time-clock-image" alt="+60 seconds">
+        <div class="out-time-actions">
+          <button id="out-time-soft" class="out-time-action-btn" aria-label="Revive for coins">
+            <img src="UI/LoseScreen/coins_button.png" alt="">
+            <span id="out-time-coin-cost">0</span>
+          </button>
+          <button id="out-time-reward" class="out-time-action-btn" aria-label="Revive free by ad">
+            <img src="UI/LoseScreen/ads_button.png" alt="">
+            <span id="out-time-reward-label">FREE</span>
+          </button>
+        </div>
+      </div>
+      <button id="out-time-restart" class="out-time-hidden-action" aria-hidden="true" tabindex="-1">Restart</button>
+    </div>
+    <div class="lose-offer">
+      <img src="UI/LoseScreen/Offer.png" alt="Premium offer">
+      <button id="out-time-purchase" class="lose-offer-purchase" type="button" aria-label="Purchase premium">
+        <img src="UI/LoseScreen/purchase_button.png" alt="">
+      </button>
+    </div>
+  </div>
+  <div id="booster-reward-overlay" style="display:none;" aria-hidden="true">
+    <div id="booster-reward-modal">
+      <div class="booster-reward-title">Need more booster!</div>
+      <button id="booster-reward-close" class="booster-reward-close" aria-label="Close">×</button>
+      <div class="booster-reward-card">
+        <div id="booster-reward-icon" class="booster-reward-icon">❄️</div>
+        <div class="booster-reward-count">1x</div>
+      </div>
+      <button id="booster-reward-watch" class="booster-reward-watch">Refill <span class="booster-reward-watch-icon">▸</span></button>
+    </div>
+  </div>
+  <div id="quit-overlay" style="display:none;" aria-hidden="true">
+    <div id="quit-modal">
+      <div class="quit-title">QUIT LEVEL?</div>
+      <div class="quit-panel">
+        <img src="heart_broken.png" class="" width="60%" height="auto">
+        <div class="quit-warning">You will lose a life!</div>
+      </div>
+        <button id="quit-quit" class="quit-quit">QUIT</button>
+      <button id="quit-close" class="quit-close"><img src="btn_close.png" width="56px" height="56px"/></button>
     </div>
   </div>
 
   <!-- Booster tutorial overlay -->
   <div id="booster-tutorial" style="display:none;" aria-hidden="true">
     <div id="booster-spotlight"></div>
-    <button id="booster-tutorial-btn" class="booster-btn">
+    <button id="booster-tutorial-btn" class="booster-btn booster-hud-btn">
       <span class="booster-icon">🔒</span>
       <span class="booster-lvl">Lv.8</span>
+      <span class="booster-lock" aria-hidden="true"></span>
     </button>
   </div>
 
   <!-- Dynamite booster tutorial overlay -->
   <div id="dynamite-tutorial" style="display:none;" aria-hidden="true">
     <div id="dynamite-spotlight"></div>
-    <button id="dynamite-tutorial-btn" class="booster-btn">
+    <button id="dynamite-tutorial-btn" class="booster-btn booster-hud-btn">
       <span class="booster-icon">🔒</span>
       <span class="booster-lvl">Lv.13</span>
+      <span class="booster-lock" aria-hidden="true"></span>
     </button>
   </div>
 
   <!-- Black Hole booster tutorial overlay -->
   <div id="blackhole-tutorial" style="display:none;" aria-hidden="true">
     <div id="blackhole-spotlight"></div>
-    <button id="blackhole-tutorial-btn" class="booster-btn">
+    <button id="blackhole-tutorial-btn" class="booster-btn booster-hud-btn">
       <span class="booster-icon">🔒</span>
       <span class="booster-lvl">Lv.18</span>
+      <span class="booster-lock" aria-hidden="true"></span>
     </button>
   </div>
 

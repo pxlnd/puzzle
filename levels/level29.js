@@ -1,7 +1,7 @@
 // ── Уровень 29 ──────────────────────────────────────────────────
 LEVELS.push({
   cols: 7, rows: 7,
-  time: 260,
+  time: 192,
   walls: [
     { color: 'cyan', dir: 'top', col: 3, cells: 2 },
     { color: 'purple', dir: 'top', col: 5, cells: 2 },

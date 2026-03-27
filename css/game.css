@@ -1250,9 +1250,10 @@ body.explosion-shake {
 
 /* ── boosters ────────────────────────────────────────────────────────── */
 #boosters-bar {
-    position: fixed;
+    position: absolute;
     left: 50%;
-    bottom: max(18px, env(safe-area-inset-bottom));
+    top: calc(100% + 30px);
+    bottom: auto;
     transform: translateX(-50%);
     z-index: 10001;
     display: flex;
@@ -1904,8 +1905,8 @@ body {
 }
 
 #boosters-bar {
-    bottom: max(22px, env(safe-area-inset-bottom));
-    gap: 16px;
+    top: calc(100% + 30px);
+    gap: 60px;
 }
 
 .booster-hud-btn {
@@ -2086,7 +2087,7 @@ body {
     }
 
     #boosters-bar {
-        gap: 12px;
+        gap: 35px;
     }
 
     .booster-hud-btn {

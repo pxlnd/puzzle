@@ -66,6 +66,7 @@ var outTimeSoftBtn = document.getElementById('out-time-soft');
 var outTimeRestartBtn = document.getElementById('out-time-restart');
 var outTimeCloseBtn = document.getElementById('out-time-close');
 var outTimePurchaseBtn = document.getElementById('out-time-purchase');
+var loseOfferEl = document.querySelector('#out-time-overlay .lose-offer');
 var outTimeActive = false;
 var boosterRewardOverlay = document.getElementById('booster-reward-overlay');
 var boosterRewardIcon = document.getElementById('booster-reward-icon');
@@ -88,6 +89,7 @@ var heartsMaxCount = 5;
 var heartsRecoverySeconds = 0;
 var heartsRecoveryTimerId = null;
 var livesTimerText = '--:--';
+var isSubscribed = false;
 
 var tutorial = {
   levelIndex: 0,
@@ -221,6 +223,7 @@ function setOutTimeOverlay(active) {
     updateCoinsView();
     updateHeartsView();
     updateOutTimeSoftButtonState();
+    applySubscriptionStatusToLoseOffer();
     outTimeOverlay.style.display = 'flex';
     outTimeOverlay.setAttribute('aria-hidden', 'false');
     requestAnimationFrame(function() { outTimeOverlay.style.opacity = '1'; });
@@ -236,6 +239,18 @@ function setOutTimeOverlay(active) {
   }, 220);
   sceneEl.style.pointerEvents = '';
   if (wasActive) resumeLevelTimerIfPossible();
+}
+
+function toBool(value) {
+  if (value === true || value === false) return value;
+  if (typeof value === 'number') return value !== 0;
+  var str = String(value || '').trim().toLowerCase();
+  return str === 'true' || str === '1' || str === 'yes';
+}
+
+function applySubscriptionStatusToLoseOffer() {
+  if (!loseOfferEl) return;
+  loseOfferEl.style.display = isSubscribed ? 'none' : '';
 }
 
 function setQuitOverlay(active) {
@@ -2227,6 +2242,11 @@ function setHeartsRecoverySeconds(value) {
 function setLivesTimer(value) {
   livesTimerText = String(value || '--:--');
   if (heartsCount < heartsMaxCount) updateLoseHeartsStatus();
+}
+
+function setSubscriptionStatus(value) {
+  isSubscribed = toBool(value);
+  applySubscriptionStatusToLoseOffer();
 }
 
 // ── Nav ───────────────────────────────────────────────────────────────────────

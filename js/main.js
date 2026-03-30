@@ -390,7 +390,6 @@ function runLevelTimer() {
     levelTimerSeconds -= 1;
     renderTimer();
     if (levelTimerSeconds > 0) {
-      if (levelTimerSeconds <= 10 && typeof Sounds !== 'undefined') Sounds.timerTick();
       return;
     }
     clearLevelTimer();

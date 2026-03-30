@@ -3,6 +3,7 @@
 
 var currentLevel = 0;
 var startOverlay = document.getElementById('start-overlay');
+var startGateActive = false;
 var startBtn = document.getElementById('start-btn');
 var sceneEl = document.getElementById('scene');
 var levelValue = document.getElementById('level-value');
@@ -201,9 +202,19 @@ function clearLevelTimer() {
   levelTimerId = null;
 }
 
+function resumeLevelTimerIfPossible() {
+  if (freezeActive) return;
+  if (startGateActive || quitActive || boosterRewardActive || outTimeActive) return;
+  if (boosterTutorialActive || dynamiteTutorialActive || blackholeTutorialActive) return;
+  if (levelTimerId || levelTimerSeconds <= 0) return;
+  runLevelTimer();
+}
+
 function setOutTimeOverlay(active) {
+  var wasActive = outTimeActive;
   outTimeActive = active;
   if (active) {
+    clearLevelTimer();
     hydrateDeferredImages();
     updateCoinsView();
     updateHeartsView();
@@ -222,11 +233,14 @@ function setOutTimeOverlay(active) {
     outTimeOverlay.setAttribute('aria-hidden', 'true');
   }, 220);
   sceneEl.style.pointerEvents = '';
+  if (wasActive) resumeLevelTimerIfPossible();
 }
 
 function setQuitOverlay(active) {
+  var wasActive = quitActive;
   quitActive = active;
   if (active) {
+    clearLevelTimer();
     hydrateDeferredImages();
     quitOverlay.style.display = 'flex';
     quitOverlay.setAttribute('aria-hidden', 'false');
@@ -241,6 +255,7 @@ function setQuitOverlay(active) {
     quitOverlay.setAttribute('aria-hidden', 'true');
   }, 220);
   sceneEl.style.pointerEvents = '';
+  if (wasActive) resumeLevelTimerIfPossible();
 }
 
 function getBoosterIcon(type) {
@@ -327,9 +342,11 @@ function setBoosters(value) {
 }
 
 function setBoosterRewardOverlay(active, type) {
+  var wasActive = boosterRewardActive;
   boosterRewardActive = active;
   if (!boosterRewardOverlay) return;
   if (active) {
+    clearLevelTimer();
     boosterRewardType = type || '';
     if (boosterRewardIcon) boosterRewardIcon.textContent = getBoosterIcon(boosterRewardType);
     boosterRewardOverlay.style.display = 'flex';
@@ -345,6 +362,7 @@ function setBoosterRewardOverlay(active, type) {
     boosterRewardOverlay.setAttribute('aria-hidden', 'true');
   }, 220);
   sceneEl.style.pointerEvents = '';
+  if (wasActive) resumeLevelTimerIfPossible();
 }
 
 function formatTimer(seconds) {
@@ -984,6 +1002,7 @@ function showBoosterTutorial() {
   var srcBtn   = document.getElementById('booster-freeze');
   if (!overlay || !tutBtn || !spotlight || !srcBtn) return;
   boosterTutorialActive = true;
+  clearLevelTimer();
   sceneEl.style.pointerEvents = 'none';
   var rect = srcBtn.getBoundingClientRect();
   spotlight.style.left   = (rect.left - 12) + 'px';
@@ -1171,6 +1190,7 @@ function hideBoosterTutorial() {
     setTimeout(function() { overlay.style.display = 'none'; }, 300);
   }
   sceneEl.style.pointerEvents = '';
+  resumeLevelTimerIfPossible();
 }
 
 // ── Dynamite Tutorial ─────────────────────────────────────────────────────────
@@ -1182,6 +1202,7 @@ function showDynamiteTutorial() {
   var srcBtn    = document.getElementById('booster-dynamite');
   if (!overlay || !tutBtn || !spotlight || !srcBtn) return;
   dynamiteTutorialActive = true;
+  clearLevelTimer();
   sceneEl.style.pointerEvents = 'none';
   var rect = srcBtn.getBoundingClientRect();
   spotlight.style.left   = (rect.left - 12) + 'px';
@@ -1287,6 +1308,7 @@ function hideDynamiteTutorial() {
     setTimeout(function() { overlay.style.display = 'none'; }, 300);
   }
   sceneEl.style.pointerEvents = '';
+  resumeLevelTimerIfPossible();
 }
 
 function activateDynamite() {
@@ -1527,6 +1549,7 @@ function showBlackholeTutorial() {
   var srcBtn    = document.getElementById('booster-blackhole');
   if (!overlay || !tutBtn || !spotlight || !srcBtn) return;
   blackholeTutorialActive = true;
+  clearLevelTimer();
   sceneEl.style.pointerEvents = 'none';
   var rect = srcBtn.getBoundingClientRect();
   spotlight.style.left   = (rect.left - 12) + 'px';
@@ -1633,6 +1656,7 @@ function hideBlackholeTutorial() {
     setTimeout(function() { overlay.style.display = 'none'; }, 300);
   }
   sceneEl.style.pointerEvents = '';
+  resumeLevelTimerIfPossible();
 }
 
 function activateBlackhole() {
@@ -1889,7 +1913,9 @@ function resetFreezeState() {
 }
 
 function setStartGate(active) {
+  startGateActive = active;
   if (active) {
+    clearLevelTimer();
     var cfg = startOverlayConfigs[currentLevel];
     if (cfg) {
       document.getElementById('start-subtitle').innerHTML = cfg.subtitle;
@@ -1905,6 +1931,7 @@ function setStartGate(active) {
   startOverlay.style.opacity = '0';
   setTimeout(function() { startOverlay.style.display = 'none'; }, startOverlayFadeMs);
   sceneEl.style.pointerEvents = '';
+  resumeLevelTimerIfPossible();
 }
 
 function sendBoosterUnlockEvent(type) {

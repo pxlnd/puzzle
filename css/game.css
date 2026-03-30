@@ -1912,8 +1912,8 @@ body {
 
 .booster-hud-btn {
     position: relative;
-    width: clamp(68px, 12.8vw, 90px);
-    height: clamp(68px, 12.8vw, 90px);
+    width: clamp(78px, 14.72vw, 104px);
+    height: clamp(78px, 14.72vw, 104px);
     border: 0;
     border-radius: clamp(18px, 3.6vw, 24px);
     background: center/100% 100% no-repeat url('../UI/GameScreen/booster_background.png');
@@ -2106,8 +2106,8 @@ body {
     }
 
     .booster-hud-btn {
-        width: 72px;
-        height: 72px;
+        width: 83px;
+        height: 83px;
     }
 }
 

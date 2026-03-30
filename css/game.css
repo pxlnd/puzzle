@@ -1998,6 +1998,13 @@ body {
     display: block;
 }
 
+.booster-hud-btn.has-plus .booster-lvl {
+    background-image: url('../ic_plus.png');
+    color: transparent;
+    font-size: 0;
+    line-height: 0;
+}
+
 .booster-hud-btn .booster-lock {
     position: absolute;
     z-index: 3;
@@ -2053,6 +2060,13 @@ body {
     padding: 0;
     box-shadow: none;
     font-size: 16px;
+}
+
+.booster-hud-btn.unlocked.has-plus .booster-lvl {
+    background: center/100% 100% no-repeat url('../ic_plus.png');
+    color: transparent;
+    font-size: 0;
+    line-height: 0;
 }
 
 @media (max-width: 680px) {

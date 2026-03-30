@@ -3,6 +3,7 @@
 
 var currentLevel = 0;
 var startOverlay = document.getElementById('start-overlay');
+var startGateActive = false;
 var startBtn = document.getElementById('start-btn');
 var sceneEl = document.getElementById('scene');
 var levelValue = document.getElementById('level-value');
@@ -65,6 +66,7 @@ var outTimeSoftBtn = document.getElementById('out-time-soft');
 var outTimeRestartBtn = document.getElementById('out-time-restart');
 var outTimeCloseBtn = document.getElementById('out-time-close');
 var outTimePurchaseBtn = document.getElementById('out-time-purchase');
+var loseOfferEl = document.querySelector('#out-time-overlay .lose-offer');
 var outTimeActive = false;
 var boosterRewardOverlay = document.getElementById('booster-reward-overlay');
 var boosterRewardIcon = document.getElementById('booster-reward-icon');
@@ -79,6 +81,7 @@ var freezeActive = false;
 var freezeTimerId = null;
 var freezeSceneOverlay = null;
 var addTimeReward = false;
+var rewardRequestActive = false;
 var coinsCount = 0;
 var heartsCount = 0;
 var timeOutCoinsCost = 0;
@@ -86,6 +89,7 @@ var heartsMaxCount = 5;
 var heartsRecoverySeconds = 0;
 var heartsRecoveryTimerId = null;
 var livesTimerText = '--:--';
+var isSubscribed = false;
 
 var tutorial = {
   levelIndex: 0,
@@ -201,13 +205,25 @@ function clearLevelTimer() {
   levelTimerId = null;
 }
 
+function resumeLevelTimerIfPossible() {
+  if (freezeActive) return;
+  if (rewardRequestActive) return;
+  if (startGateActive || quitActive || boosterRewardActive || outTimeActive) return;
+  if (boosterTutorialActive || dynamiteTutorialActive || blackholeTutorialActive) return;
+  if (levelTimerId || levelTimerSeconds <= 0) return;
+  runLevelTimer();
+}
+
 function setOutTimeOverlay(active) {
+  var wasActive = outTimeActive;
   outTimeActive = active;
   if (active) {
+    clearLevelTimer();
     hydrateDeferredImages();
     updateCoinsView();
     updateHeartsView();
     updateOutTimeSoftButtonState();
+    applySubscriptionStatusToLoseOffer();
     outTimeOverlay.style.display = 'flex';
     outTimeOverlay.setAttribute('aria-hidden', 'false');
     requestAnimationFrame(function() { outTimeOverlay.style.opacity = '1'; });
@@ -222,11 +238,26 @@ function setOutTimeOverlay(active) {
     outTimeOverlay.setAttribute('aria-hidden', 'true');
   }, 220);
   sceneEl.style.pointerEvents = '';
+  if (wasActive) resumeLevelTimerIfPossible();
+}
+
+function toBool(value) {
+  if (value === true || value === false) return value;
+  if (typeof value === 'number') return value !== 0;
+  var str = String(value || '').trim().toLowerCase();
+  return str === 'true' || str === '1' || str === 'yes';
+}
+
+function applySubscriptionStatusToLoseOffer() {
+  if (!loseOfferEl) return;
+  loseOfferEl.style.display = isSubscribed ? 'none' : '';
 }
 
 function setQuitOverlay(active) {
+  var wasActive = quitActive;
   quitActive = active;
   if (active) {
+    clearLevelTimer();
     hydrateDeferredImages();
     quitOverlay.style.display = 'flex';
     quitOverlay.setAttribute('aria-hidden', 'false');
@@ -241,6 +272,7 @@ function setQuitOverlay(active) {
     quitOverlay.setAttribute('aria-hidden', 'true');
   }, 220);
   sceneEl.style.pointerEvents = '';
+  if (wasActive) resumeLevelTimerIfPossible();
 }
 
 function getBoosterIcon(type) {
@@ -277,6 +309,18 @@ function refreshBoosterDisplays() {
   updateBlackholeDisplay();
 }
 
+function applyBoosterBadgeState(btn, balance) {
+  if (!btn) return;
+  var lvl = btn.querySelector('.booster-lvl');
+  if (lvl) {
+    lvl.textContent = balance > 0 ? String(balance) : '';
+    lvl.style.display = 'block';
+  }
+  btn.classList.add('has-count');
+  btn.classList.toggle('has-plus', balance <= 0);
+  btn.classList.remove('depleted');
+}
+
 function updateTutorialBoosterDisplay(type) {
   var btnId = '';
   if (type === 'freeze') btnId = 'booster-tutorial-btn';
@@ -285,13 +329,14 @@ function updateTutorialBoosterDisplay(type) {
   if (!btnId) return;
   var btn = document.getElementById(btnId);
   if (!btn || !btn.classList.contains('unlocked')) return;
-  btn.querySelector('.booster-lvl').textContent = String(getBoosterBalance(type));
+  applyBoosterBadgeState(btn, getBoosterBalance(type));
 }
 
 function syncTutorialBoosterButton(tutBtn, srcBtn) {
   if (!tutBtn || !srcBtn) return;
   tutBtn.classList.toggle('unlocked', srcBtn.classList.contains('unlocked'));
   tutBtn.classList.toggle('has-count', srcBtn.classList.contains('has-count'));
+  tutBtn.classList.toggle('has-plus', srcBtn.classList.contains('has-plus'));
   tutBtn.classList.toggle('depleted', srcBtn.classList.contains('depleted'));
   var srcLvl = srcBtn.querySelector('.booster-lvl');
   var tutLvl = tutBtn.querySelector('.booster-lvl');
@@ -327,9 +372,11 @@ function setBoosters(value) {
 }
 
 function setBoosterRewardOverlay(active, type) {
+  var wasActive = boosterRewardActive;
   boosterRewardActive = active;
   if (!boosterRewardOverlay) return;
   if (active) {
+    clearLevelTimer();
     boosterRewardType = type || '';
     if (boosterRewardIcon) boosterRewardIcon.textContent = getBoosterIcon(boosterRewardType);
     boosterRewardOverlay.style.display = 'flex';
@@ -345,6 +392,7 @@ function setBoosterRewardOverlay(active, type) {
     boosterRewardOverlay.setAttribute('aria-hidden', 'true');
   }, 220);
   sceneEl.style.pointerEvents = '';
+  if (wasActive) resumeLevelTimerIfPossible();
 }
 
 function formatTimer(seconds) {
@@ -370,7 +418,6 @@ function runLevelTimer() {
     levelTimerSeconds -= 1;
     renderTimer();
     if (levelTimerSeconds > 0) {
-      if (levelTimerSeconds <= 10 && typeof Sounds !== 'undefined') Sounds.timerTick();
       return;
     }
     clearLevelTimer();
@@ -933,39 +980,21 @@ function updateFreezeDisplay() {
   var btn = document.getElementById('booster-freeze');
   if (!btn || !btn.classList.contains('unlocked')) return;
   var balance = getBoosterBalance('freeze');
-  var lvl = btn.querySelector('.booster-lvl');
-  if (lvl) {
-    lvl.textContent = String(balance);
-    lvl.style.display = 'block';
-  }
-  btn.classList.add('has-count');
-  btn.classList.remove('depleted');
+  applyBoosterBadgeState(btn, balance);
 }
 
 function updateDynamiteDisplay() {
   var btn = document.getElementById('booster-dynamite');
   if (!btn || !btn.classList.contains('unlocked')) return;
   var balance = getBoosterBalance('dynamite');
-  var lvl = btn.querySelector('.booster-lvl');
-  if (lvl) {
-    lvl.textContent = String(balance);
-    lvl.style.display = 'block';
-  }
-  btn.classList.add('has-count');
-  btn.classList.remove('depleted');
+  applyBoosterBadgeState(btn, balance);
 }
 
 function updateBlackholeDisplay() {
   var btn = document.getElementById('booster-blackhole');
   if (!btn || !btn.classList.contains('unlocked')) return;
   var balance = getBoosterBalance('blackhole');
-  var lvl = btn.querySelector('.booster-lvl');
-  if (lvl) {
-    lvl.textContent = String(balance);
-    lvl.style.display = 'block';
-  }
-  btn.classList.add('has-count');
-  btn.classList.remove('depleted');
+  applyBoosterBadgeState(btn, balance);
 }
 
 function shakeBooster(btn) {
@@ -984,6 +1013,7 @@ function showBoosterTutorial() {
   var srcBtn   = document.getElementById('booster-freeze');
   if (!overlay || !tutBtn || !spotlight || !srcBtn) return;
   boosterTutorialActive = true;
+  clearLevelTimer();
   sceneEl.style.pointerEvents = 'none';
   var rect = srcBtn.getBoundingClientRect();
   spotlight.style.left   = (rect.left - 12) + 'px';
@@ -1171,6 +1201,7 @@ function hideBoosterTutorial() {
     setTimeout(function() { overlay.style.display = 'none'; }, 300);
   }
   sceneEl.style.pointerEvents = '';
+  resumeLevelTimerIfPossible();
 }
 
 // ── Dynamite Tutorial ─────────────────────────────────────────────────────────
@@ -1182,6 +1213,7 @@ function showDynamiteTutorial() {
   var srcBtn    = document.getElementById('booster-dynamite');
   if (!overlay || !tutBtn || !spotlight || !srcBtn) return;
   dynamiteTutorialActive = true;
+  clearLevelTimer();
   sceneEl.style.pointerEvents = 'none';
   var rect = srcBtn.getBoundingClientRect();
   spotlight.style.left   = (rect.left - 12) + 'px';
@@ -1287,9 +1319,13 @@ function hideDynamiteTutorial() {
     setTimeout(function() { overlay.style.display = 'none'; }, 300);
   }
   sceneEl.style.pointerEvents = '';
+  resumeLevelTimerIfPossible();
 }
 
 function activateDynamite() {
+  if (getBoosterBalance('dynamite') <= 0) { setBoosterRewardOverlay(true, 'dynamite'); return; }
+  if (typeof Sounds !== 'undefined') Sounds.boosterClick();
+  addBoosterBalance('dynamite', -1);
   hideDynamiteTutorial();
   var srcBtn = document.getElementById('booster-dynamite');
   if (srcBtn) {
@@ -1527,6 +1563,7 @@ function showBlackholeTutorial() {
   var srcBtn    = document.getElementById('booster-blackhole');
   if (!overlay || !tutBtn || !spotlight || !srcBtn) return;
   blackholeTutorialActive = true;
+  clearLevelTimer();
   sceneEl.style.pointerEvents = 'none';
   var rect = srcBtn.getBoundingClientRect();
   spotlight.style.left   = (rect.left - 12) + 'px';
@@ -1633,9 +1670,13 @@ function hideBlackholeTutorial() {
     setTimeout(function() { overlay.style.display = 'none'; }, 300);
   }
   sceneEl.style.pointerEvents = '';
+  resumeLevelTimerIfPossible();
 }
 
 function activateBlackhole() {
+  if (getBoosterBalance('blackhole') <= 0) { setBoosterRewardOverlay(true, 'blackhole'); return; }
+  if (typeof Sounds !== 'undefined') Sounds.boosterClick();
+  addBoosterBalance('blackhole', -1);
   hideBlackholeTutorial();
   var srcBtn = document.getElementById('booster-blackhole');
   if (srcBtn) {
@@ -1843,6 +1884,9 @@ function activateFreezeEffect() {
 }
 
 function activateFreeze() {
+  if (getBoosterBalance('freeze') <= 0) { setBoosterRewardOverlay(true, 'freeze'); return; }
+  if (typeof Sounds !== 'undefined') Sounds.boosterClick();
+  addBoosterBalance('freeze', -1);
   hideBoosterTutorial();
   var srcBtn = document.getElementById('booster-freeze');
   if (srcBtn) {
@@ -1889,7 +1933,9 @@ function resetFreezeState() {
 }
 
 function setStartGate(active) {
+  startGateActive = active;
   if (active) {
+    clearLevelTimer();
     var cfg = startOverlayConfigs[currentLevel];
     if (cfg) {
       document.getElementById('start-subtitle').innerHTML = cfg.subtitle;
@@ -1905,6 +1951,7 @@ function setStartGate(active) {
   startOverlay.style.opacity = '0';
   setTimeout(function() { startOverlay.style.display = 'none'; }, startOverlayFadeMs);
   sceneEl.style.pointerEvents = '';
+  resumeLevelTimerIfPossible();
 }
 
 function sendBoosterUnlockEvent(type) {
@@ -1916,6 +1963,8 @@ function sendBoosterUsedEvent(type) {
 }
 
 function sendBoosterRewardEvent(type) {
+  rewardRequestActive = true;
+  clearLevelTimer();
   window.location = "uniwebview://booster_reward?type=" + encodeURIComponent(type);
 }
 
@@ -1941,7 +1990,7 @@ function loadLevel(idx) {
       freezeBtn.querySelector('.booster-icon').textContent = '🔒';
       freezeBtn.querySelector('.booster-lvl').textContent  = 'Lv.8';
       freezeBtn.querySelector('.booster-lvl').style.display = 'none';
-      freezeBtn.classList.remove('unlocked', 'depleted', 'has-count');
+      freezeBtn.classList.remove('unlocked', 'depleted', 'has-count', 'has-plus');
     }
   } else {
     var freezeUnlockedBtn = document.getElementById('booster-freeze');
@@ -1958,7 +2007,7 @@ function loadLevel(idx) {
       dynBtn.querySelector('.booster-icon').textContent = '🔒';
       dynBtn.querySelector('.booster-lvl').textContent  = 'Lv.13';
       dynBtn.querySelector('.booster-lvl').style.display = 'none';
-      dynBtn.classList.remove('unlocked', 'depleted', 'has-count');
+      dynBtn.classList.remove('unlocked', 'depleted', 'has-count', 'has-plus');
     }
   } else {
     var dynUnlockedBtn = document.getElementById('booster-dynamite');
@@ -1975,7 +2024,7 @@ function loadLevel(idx) {
       bhBtn.querySelector('.booster-icon').textContent = '🔒';
       bhBtn.querySelector('.booster-lvl').textContent  = 'Lv.18';
       bhBtn.querySelector('.booster-lvl').style.display = 'none';
-      bhBtn.classList.remove('unlocked', 'depleted', 'has-count');
+      bhBtn.classList.remove('unlocked', 'depleted', 'has-count', 'has-plus');
     }
   } else {
     var bhUnlockedBtn = document.getElementById('booster-blackhole');
@@ -2029,12 +2078,14 @@ function setLevel(value) {
 }
 
 function rewardResult(value) {
+  rewardRequestActive = false;
   if (value == "true" ? true : false) {
     if (addTimeReward) {
       addBonusTime(60);
       addTimeReward = false;
     }
   }
+  resumeLevelTimerIfPossible();
 }
 
 function setTextById(id, value) {
@@ -2113,10 +2164,13 @@ function addBoosterRewardCharge(type) {
 }
 
 function boosterRewardResult(value) {
+  rewardRequestActive = false;
   var isSuccess = value === true || String(value).toLowerCase() === 'true';
-  if (!isSuccess) return;
-  addBoosterRewardCharge(boosterRewardType);
-  setBoosterRewardOverlay(false);
+  if (isSuccess) {
+    addBoosterRewardCharge(boosterRewardType);
+    setBoosterRewardOverlay(false);
+  }
+  resumeLevelTimerIfPossible();
 }
 
 function updateCoinsView() {
@@ -2190,6 +2244,11 @@ function setLivesTimer(value) {
   if (heartsCount < heartsMaxCount) updateLoseHeartsStatus();
 }
 
+function setSubscriptionStatus(value) {
+  isSubscribed = toBool(value);
+  applySubscriptionStatusToLoseOffer();
+}
+
 // ── Nav ───────────────────────────────────────────────────────────────────────
 
 var levelLabel = document.getElementById('level-label');
@@ -2236,6 +2295,8 @@ startBtn.addEventListener('click', function() {
 });
 outTimeRewardBtn.addEventListener('click', function() {
   addTimeReward = true;
+  rewardRequestActive = true;
+  clearLevelTimer();
   window.location = "uniwebview://reward";
 });
 if (boosterRewardWatchBtn) {

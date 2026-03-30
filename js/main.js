@@ -80,6 +80,7 @@ var freezeActive = false;
 var freezeTimerId = null;
 var freezeSceneOverlay = null;
 var addTimeReward = false;
+var rewardRequestActive = false;
 var coinsCount = 0;
 var heartsCount = 0;
 var timeOutCoinsCost = 0;
@@ -204,6 +205,7 @@ function clearLevelTimer() {
 
 function resumeLevelTimerIfPossible() {
   if (freezeActive) return;
+  if (rewardRequestActive) return;
   if (startGateActive || quitActive || boosterRewardActive || outTimeActive) return;
   if (boosterTutorialActive || dynamiteTutorialActive || blackholeTutorialActive) return;
   if (levelTimerId || levelTimerSeconds <= 0) return;
@@ -1943,6 +1945,8 @@ function sendBoosterUsedEvent(type) {
 }
 
 function sendBoosterRewardEvent(type) {
+  rewardRequestActive = true;
+  clearLevelTimer();
   window.location = "uniwebview://booster_reward?type=" + encodeURIComponent(type);
 }
 
@@ -2056,12 +2060,14 @@ function setLevel(value) {
 }
 
 function rewardResult(value) {
+  rewardRequestActive = false;
   if (value == "true" ? true : false) {
     if (addTimeReward) {
       addBonusTime(60);
       addTimeReward = false;
     }
   }
+  resumeLevelTimerIfPossible();
 }
 
 function setTextById(id, value) {
@@ -2140,10 +2146,13 @@ function addBoosterRewardCharge(type) {
 }
 
 function boosterRewardResult(value) {
+  rewardRequestActive = false;
   var isSuccess = value === true || String(value).toLowerCase() === 'true';
-  if (!isSuccess) return;
-  addBoosterRewardCharge(boosterRewardType);
-  setBoosterRewardOverlay(false);
+  if (isSuccess) {
+    addBoosterRewardCharge(boosterRewardType);
+    setBoosterRewardOverlay(false);
+  }
+  resumeLevelTimerIfPossible();
 }
 
 function updateCoinsView() {
@@ -2263,6 +2272,8 @@ startBtn.addEventListener('click', function() {
 });
 outTimeRewardBtn.addEventListener('click', function() {
   addTimeReward = true;
+  rewardRequestActive = true;
+  clearLevelTimer();
   window.location = "uniwebview://reward";
 });
 if (boosterRewardWatchBtn) {

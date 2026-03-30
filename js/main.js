@@ -204,6 +204,7 @@ function clearLevelTimer() {
 function setOutTimeOverlay(active) {
   outTimeActive = active;
   if (active) {
+    hydrateDeferredImages();
     updateCoinsView();
     updateHeartsView();
     updateOutTimeSoftButtonState();
@@ -226,6 +227,7 @@ function setOutTimeOverlay(active) {
 function setQuitOverlay(active) {
   quitActive = active;
   if (active) {
+    hydrateDeferredImages();
     quitOverlay.style.display = 'flex';
     quitOverlay.setAttribute('aria-hidden', 'false');
     requestAnimationFrame(function() { quitOverlay.style.opacity = '1'; });
@@ -2048,6 +2050,25 @@ function formatSeconds(value) {
   return String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
 }
 
+function hydrateDeferredImages() {
+  var deferred = document.querySelectorAll('img[data-src]');
+  deferred.forEach(function(img) {
+    var src = img.getAttribute('data-src');
+    if (!src) return;
+    img.src = src;
+    img.removeAttribute('data-src');
+  });
+}
+
+function scheduleDeferredImagesHydration() {
+  var run = function() { hydrateDeferredImages(); };
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(run, { timeout: 1400 });
+    return;
+  }
+  setTimeout(run, 420);
+}
+
 function ensureHeartsRecoveryTicker() {
   if (heartsRecoveryTimerId || heartsRecoverySeconds <= 0) return;
   heartsRecoveryTimerId = setInterval(function() {
@@ -2348,3 +2369,4 @@ updateCoinsView();
 updateHeartsView();
 setTimeOutCoinsCost(timeOutCoinsCost);
 fadeIn();
+scheduleDeferredImagesHydration();

@@ -268,16 +268,17 @@ ghostEl.id = 'ghost';
 ghostEl.style.display = 'none';
 scene.appendChild(ghostEl);
 var ghostCanvas = null;
+var ghostDrawFigure = null;
+var ghostDrawValid = null;
+var ghostDrawW = 0;
+var ghostDrawH = 0;
+var ghostPosCol = null;
+var ghostPosRow = null;
+var ghostStyleW = 0;
+var ghostStyleH = 0;
 
-function showGhost(fig, col, row, valid) {
-  var W = fig._maxC * (CELL + GAP) + CELL;
-  var H = fig._maxR * (CELL + GAP) + CELL;
-  ghostEl.style.width  = W + 'px';
-  ghostEl.style.height = H + 'px';
-  var p = cellPos(col, row);
-  ghostEl.style.left = p.x + 'px';
-  ghostEl.style.top  = p.y + 'px';
-  if (!ghostCanvas) { ghostCanvas = document.createElement('canvas'); ghostEl.appendChild(ghostCanvas); }
+function redrawGhost(fig, W, H, valid) {
+  if (!ghostCanvas) return;
   var ctx = prepCanvas(ghostCanvas, W, H);
   ctx.clearRect(0, 0, W, H);
   buildFigurePath(ctx, fig._cells);
@@ -286,10 +287,51 @@ function showGhost(fig, col, row, valid) {
   ctx.strokeStyle = valid ? 'rgba(255,255,255,0.55)' : 'rgba(255,80,80,0.6)';
   ctx.lineWidth = 2;
   ctx.stroke();
-  ghostEl.style.display = 'block';
 }
 
-function hideGhost() { ghostEl.style.display = 'none'; }
+function showGhost(fig, col, row, valid) {
+  if (!fig) return;
+  var W = fig._W || (fig._maxC * (CELL + GAP) + CELL);
+  var H = fig._H || (fig._maxR * (CELL + GAP) + CELL);
+
+  if (ghostStyleW !== W) {
+    ghostEl.style.width = W + 'px';
+    ghostStyleW = W;
+  }
+  if (ghostStyleH !== H) {
+    ghostEl.style.height = H + 'px';
+    ghostStyleH = H;
+  }
+
+  if (ghostPosCol !== col || ghostPosRow !== row) {
+    var p = cellPos(col, row);
+    ghostEl.style.left = p.x + 'px';
+    ghostEl.style.top = p.y + 'px';
+    ghostPosCol = col;
+    ghostPosRow = row;
+  }
+
+  if (!ghostCanvas) {
+    ghostCanvas = document.createElement('canvas');
+    ghostEl.appendChild(ghostCanvas);
+  }
+
+  if (ghostDrawFigure !== fig || ghostDrawValid !== valid || ghostDrawW !== W || ghostDrawH !== H) {
+    redrawGhost(fig, W, H, valid);
+    ghostDrawFigure = fig;
+    ghostDrawValid = valid;
+    ghostDrawW = W;
+    ghostDrawH = H;
+  }
+
+  if (ghostEl.style.display !== 'block') ghostEl.style.display = 'block';
+}
+
+function hideGhost() {
+  if (ghostEl.style.display !== 'none') ghostEl.style.display = 'none';
+  ghostPosCol = null;
+  ghostPosRow = null;
+}
 
 // ── Particles ─────────────────────────────────────────────────────────────────
 
@@ -341,13 +383,17 @@ function spawnParticles(cx, cy, color, count) {
 function tickParticles() {
   pctx.setTransform(pDPR, 0, 0, pDPR, 0, 0);
   pctx.clearRect(0, 0, pCanvas.width / pDPR, pCanvas.height / pDPR);
-  parts = parts.filter(function(p) { return p.op > 0.015; });
-  parts.forEach(function(p) {
+
+  var alive = 0;
+  for (var i = 0; i < parts.length; i++) {
+    var p = parts[i];
     p.x  += p.vx;
     p.y  += p.vy;
     p.vy += 0.21;
     p.vx *= 0.979;
     p.op -= 0.019;
+    if (p.op <= 0.015) continue;
+
     p.rot += p.rotV;
     pctx.save();
     pctx.globalAlpha = Math.max(0, p.op);
@@ -362,8 +408,11 @@ function tickParticles() {
       pctx.fillRect(-p.size * 0.5, -p.size * 0.38, p.size, p.size * 0.76);
     }
     pctx.restore();
-  });
-  if (parts.length) {
+    parts[alive++] = p;
+  }
+  parts.length = alive;
+
+  if (alive) {
     pRafId = requestAnimationFrame(tickParticles);
   } else {
     pRafId = null;
@@ -532,28 +581,71 @@ function attachDrag(fig) {
     }
     if (typeof window.onFigureDragState === 'function') window.onFigureDragState(fig, true);
     if (typeof Sounds !== 'undefined') Sounds.pickup();
-    var prevCol = fig._col, prevRow = fig._row;
-    var lastValidCol = prevCol, lastValidRow = prevRow;
+    var prevCol = fig._col;
+    var prevRow = fig._row;
+    var lastValidCol = prevCol;
+    var lastValidRow = prevRow;
+    var renderedCol = prevCol;
+    var renderedRow = prevRow;
+    var dragColorKey = currentFigureColorKey(fig);
+    var sceneRect = scene.getBoundingClientRect();
+    var rafMoveId = 0;
+    var pendingMoveEvent = null;
+
     fig.classList.add('dragging');
     fig.style.zIndex = 20;
-    fig.style.filter = 'drop-shadow(0 16px 24px rgba(0,0,0,0.55)) drop-shadow(0 0 18px ' + fig._color + 'cc)';
+    fig.style.willChange = 'left, top, transform';
+    fig.style.filter = 'drop-shadow(0 10px 16px rgba(0,0,0,0.45))';
     var rect = fig.getBoundingClientRect();
     var grabX = xy.x - rect.left;
     var grabY = xy.y - rect.top;
     freeCells(fig);
     e.preventDefault();
     e.stopPropagation();
-    var figW = fig._maxC * (CELL + GAP) + CELL;
-    var figH = fig._maxR * (CELL + GAP) + CELL;
+    var figW = fig._W || (fig._maxC * (CELL + GAP) + CELL);
+    var figH = fig._H || (fig._maxR * (CELL + GAP) + CELL);
     var lockedRawX = cellPos(prevCol, prevRow).x;
     var lockedRawY = cellPos(prevCol, prevRow).y;
+
+    var wallsByDir = { left: [], right: [], top: [], bottom: [] };
+    walls.forEach(function(w) {
+      if (wallsByDir[w._dir]) wallsByDir[w._dir].push(w);
+    });
+
+    function setWallVisual(wall, transform, filter) {
+      if (wall._dragTransform !== transform) {
+        wall.style.transform = transform;
+        wall._dragTransform = transform;
+      }
+      if (wall._dragFilter !== filter) {
+        wall.style.filter = filter;
+        wall._dragFilter = filter;
+      }
+    }
+
+    function clearWallVisuals() {
+      walls.forEach(function(wall) {
+        setWallVisual(wall, '', '');
+        wall._dragTransform = null;
+        wall._dragFilter = null;
+      });
+    }
+
+    function renderFigureAt(col, row) {
+      if (renderedCol === col && renderedRow === row) return;
+      var p = cellPos(col, row);
+      fig.style.left = p.x + 'px';
+      fig.style.top = p.y + 'px';
+      renderedCol = col;
+      renderedRow = row;
+    }
 
     function pickBestWall(candidates) {
       if (!candidates.length) return null;
       if (candidates.length === 1) return candidates[0];
-      var matching = candidates.filter(function(w) {
-        return !!currentFigureColorKey(fig) && currentFigureColorKey(fig) === w._colorKey;
-      });
+      var matching = dragColorKey
+        ? candidates.filter(function(w) { return dragColorKey === w._colorKey; })
+        : [];
       var pool = matching.length ? matching : candidates;
       return pool.reduce(function(best, w) {
         var horiz = w._dir === 'top' || w._dir === 'bottom';
@@ -563,26 +655,28 @@ function attachDrag(fig) {
         return Math.abs(figPos - wMid) < Math.abs(figPos - bestMid) ? w : best;
       });
     }
+
     function hoveredWall(pointerX, pointerY) {
-      var beyond = {
-        left:   pointerX < 0,
-        right:  pointerX > BOARD_W,
-        top:    pointerY < 0,
-        bottom: pointerY > BOARD_H,
-      };
-      var candidates = walls.filter(function(w) { return beyond[w._dir]; });
+      var candidates = [];
+      if (pointerX < 0) candidates = candidates.concat(wallsByDir.left);
+      if (pointerX > BOARD_W) candidates = candidates.concat(wallsByDir.right);
+      if (pointerY < 0) candidates = candidates.concat(wallsByDir.top);
+      if (pointerY > BOARD_H) candidates = candidates.concat(wallsByDir.bottom);
       return pickBestWall(candidates);
     }
+
     function fitsThroughWall(wall) {
       var horiz = wall._dir === 'top' || wall._dir === 'bottom';
       return horiz ? fig._maxC + 1 <= wall._wallCells : fig._maxR + 1 <= wall._wallCells;
     }
+
     function isAdjacentToWall(wall) {
       if (wall._dir === 'top') return lastValidRow === 0;
       if (wall._dir === 'bottom') return lastValidRow === ROWS - fig._maxR - 1;
       if (wall._dir === 'left') return lastValidCol === 0;
       return lastValidCol === COLS - fig._maxC - 1;
     }
+
     function alignedWithWall(wall) {
       var horiz = wall._dir === 'top' || wall._dir === 'bottom';
       if (horiz) {
@@ -593,9 +687,10 @@ function attachDrag(fig) {
                lastValidRow + fig._maxR <= wall._startCell + wall._wallCells - 1;
       }
     }
+
     function trySnapToWall(wall) {
-      var requiredColorKey = currentFigureColorKey(fig);
-      if (!requiredColorKey || requiredColorKey !== wall._colorKey || !fitsThroughWall(wall)) return null;
+      if (!wall) return null;
+      if (!dragColorKey || dragColorKey !== wall._colorKey || !fitsThroughWall(wall)) return null;
       if (!isAdjacentToWall(wall) || !alignedWithWall(wall)) return null;
       var snapCol, snapRow;
       if (wall._dir === 'top' || wall._dir === 'bottom') {
@@ -607,6 +702,7 @@ function attachDrag(fig) {
       }
       return { col: snapCol, row: snapRow };
     }
+
     function findAutoSnapWall() {
       var eligible = walls.filter(function(w) {
         var snap = trySnapToWall(w);
@@ -614,6 +710,7 @@ function attachDrag(fig) {
       });
       return pickBestWall(eligible);
     }
+
     function removeFigureThroughWall(wall) {
       var wallHex = WALL_HEX[wall._colorKey] || '#ffffff';
       wall.style.transition = 'transform 0.15s, filter 0.15s';
@@ -639,6 +736,7 @@ function attachDrag(fig) {
       }, 180);
       return true;
     }
+
     function breakFigureOutlineThroughWall(wall) {
       var wallHex = WALL_HEX[wall._colorKey] || '#ffffff';
       wall.style.transition = 'transform 0.15s, filter 0.15s';
@@ -652,9 +750,11 @@ function attachDrag(fig) {
       fig._outlineVisible = false;
       fig._outlineActive = false;
       fig._colorKey = currentFigureColorKey(fig);
+      dragColorKey = fig._colorKey;
       redrawFigureCanvas(fig);
       return false;
     }
+
     function resolveWallMatch(wall) {
       if (fig._outlineActive) {
         if (fig._outlineColorKey && wall._colorKey === fig._outlineColorKey) {
@@ -664,37 +764,38 @@ function attachDrag(fig) {
       }
       return removeFigureThroughWall(wall);
     }
+
     function getNearWall(rawX, rawY) {
       var SNAP = CELL + GAP;
-      var near = {
-        left:   rawX >= 0 && rawX < SNAP,
-        right:  rawX <= BOARD_W - figW && rawX > BOARD_W - figW - SNAP,
-        top:    rawY >= 0 && rawY < SNAP,
-        bottom: rawY <= BOARD_H - figH && rawY > BOARD_H - figH - SNAP,
-      };
-      var candidates = walls.filter(function(w) { return near[w._dir]; });
+      var candidates = [];
+      if (rawX >= 0 && rawX < SNAP) candidates = candidates.concat(wallsByDir.left);
+      if (rawX <= BOARD_W - figW && rawX > BOARD_W - figW - SNAP) candidates = candidates.concat(wallsByDir.right);
+      if (rawY >= 0 && rawY < SNAP) candidates = candidates.concat(wallsByDir.top);
+      if (rawY <= BOARD_H - figH && rawY > BOARD_H - figH - SNAP) candidates = candidates.concat(wallsByDir.bottom);
       return pickBestWall(candidates);
     }
+
     function updateWallHighlight(rawX, rawY, pointerX, pointerY) {
       var w = hoveredWall(pointerX, pointerY);
       var n = w ? null : getNearWall(rawX, rawY);
       walls.forEach(function(wall) {
+        var transform = '';
+        var filter = '';
         if (wall === w) {
           var match = trySnapToWall(wall) !== null;
-          wall.style.transform = 'scale(1.1)';
-          wall.style.filter    = match
+          transform = 'scale(1.1)';
+          filter = match
             ? 'brightness(1.5) drop-shadow(0 0 14px rgba(255,255,255,0.9))'
             : 'brightness(0.55) saturate(0.3)';
         } else if (n && wall === n && trySnapToWall(wall) !== null) {
-          wall.style.transform = 'scale(1.05)';
-          wall.style.filter    = 'brightness(1.3) drop-shadow(0 0 8px rgba(255,255,255,0.6))';
-        } else {
-          wall.style.transform = '';
-          wall.style.filter    = '';
+          transform = 'scale(1.05)';
+          filter = 'brightness(1.3) drop-shadow(0 0 8px rgba(255,255,255,0.6))';
         }
+        setWallVisual(wall, transform, filter);
       });
       return w;
     }
+
     function moveToward(targetCol, targetRow) {
       var curCol = lastValidCol;
       var curRow = lastValidRow;
@@ -730,14 +831,12 @@ function attachDrag(fig) {
       lastValidRow = curRow;
     }
 
-    var onMove = function(e) {
-      if (e.cancelable) e.preventDefault();
-      var xy = getXY(e);
-      var sr   = scene.getBoundingClientRect();
-      var rawX = (xy.x - grabX - sr.left) / gameScale;
-      var rawY = (xy.y - grabY - sr.top)  / gameScale;
-      var pointerX = (xy.x - sr.left) / gameScale;
-      var pointerY = (xy.y - sr.top) / gameScale;
+    function processMoveEvent(ev) {
+      var moveXY = getXY(ev);
+      var rawX = (moveXY.x - grabX - sceneRect.left) / gameScale;
+      var rawY = (moveXY.y - grabY - sceneRect.top) / gameScale;
+      var pointerX = (moveXY.x - sceneRect.left) / gameScale;
+      var pointerY = (moveXY.y - sceneRect.top) / gameScale;
       if (fig._moveAxis === 'x') rawY = lockedRawY;
       if (fig._moveAxis === 'y') rawX = lockedRawX;
       var overWall = updateWallHighlight(rawX, rawY, pointerX, pointerY);
@@ -747,12 +846,11 @@ function attachDrag(fig) {
           lastValidCol = snap.col;
           lastValidRow = snap.row;
         }
-        var p = cellPos(lastValidCol, lastValidRow);
-        fig.style.left = p.x + 'px';
-        fig.style.top  = p.y + 'px';
+        renderFigureAt(lastValidCol, lastValidRow);
         hideGhost();
         return;
       }
+
       var px = Math.max(0, Math.min(BOARD_W - figW, rawX));
       var py = Math.max(0, Math.min(BOARD_H - figH, rawY));
       var col = Math.round((px - PAD) / (CELL + GAP));
@@ -762,32 +860,46 @@ function attachDrag(fig) {
       if (fig._moveAxis === 'x') clampedRow = prevRow;
       if (fig._moveAxis === 'y') clampedCol = prevCol;
       moveToward(clampedCol, clampedRow);
-      var p = cellPos(lastValidCol, lastValidRow);
-      fig.style.left = p.x + 'px';
-      fig.style.top  = p.y + 'px';
+      renderFigureAt(lastValidCol, lastValidRow);
       showGhost(fig, lastValidCol, lastValidRow, true);
+    }
+
+    var onMove = function(ev) {
+      if (ev.cancelable) ev.preventDefault();
+      pendingMoveEvent = ev;
+      if (rafMoveId) return;
+      rafMoveId = requestAnimationFrame(function() {
+        rafMoveId = 0;
+        if (!pendingMoveEvent) return;
+        processMoveEvent(pendingMoveEvent);
+        pendingMoveEvent = null;
+      });
     };
 
     var onUp = function(e) {
+      if (rafMoveId) {
+        cancelAnimationFrame(rafMoveId);
+        rafMoveId = 0;
+      }
+      if (pendingMoveEvent) {
+        processMoveEvent(pendingMoveEvent);
+        pendingMoveEvent = null;
+      }
       if (typeof window.onFigureDragState === 'function') window.onFigureDragState(fig, false);
       if (typeof Sounds !== 'undefined') Sounds.drop();
       fig.classList.remove('dragging');
       fig.style.filter = '';
       fig.style.zIndex = 10;
+      fig.style.willChange = '';
       hideGhost();
-      walls.forEach(function(w) { w.style.transform = ''; w.style.filter = ''; });
+      clearWallVisuals();
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup',   onUp);
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend',  onUp);
       var xy = getXY(e);
-      var sr2  = scene.getBoundingClientRect();
-      var rawX = (xy.x - grabX - sr2.left) / gameScale;
-      var rawY = (xy.y - grabY - sr2.top)  / gameScale;
-      var pointerX = (xy.x - sr2.left) / gameScale;
-      var pointerY = (xy.y - sr2.top) / gameScale;
-      if (fig._moveAxis === 'x') rawY = lockedRawY;
-      if (fig._moveAxis === 'y') rawX = lockedRawX;
+      var pointerX = (xy.x - sceneRect.left) / gameScale;
+      var pointerY = (xy.y - sceneRect.top) / gameScale;
       var wall = hoveredWall(pointerX, pointerY);
       var snapOnDrop = wall ? trySnapToWall(wall) : null;
       var match = !!snapOnDrop && canPlace(fig, snapOnDrop.col, snapOnDrop.row);

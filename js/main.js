@@ -1308,6 +1308,9 @@ function hideDynamiteTutorial() {
 }
 
 function activateDynamite() {
+  if (getBoosterBalance('dynamite') <= 0) { setBoosterRewardOverlay(true, 'dynamite'); return; }
+  if (typeof Sounds !== 'undefined') Sounds.boosterClick();
+  addBoosterBalance('dynamite', -1);
   hideDynamiteTutorial();
   var srcBtn = document.getElementById('booster-dynamite');
   if (srcBtn) {
@@ -1656,6 +1659,9 @@ function hideBlackholeTutorial() {
 }
 
 function activateBlackhole() {
+  if (getBoosterBalance('blackhole') <= 0) { setBoosterRewardOverlay(true, 'blackhole'); return; }
+  if (typeof Sounds !== 'undefined') Sounds.boosterClick();
+  addBoosterBalance('blackhole', -1);
   hideBlackholeTutorial();
   var srcBtn = document.getElementById('booster-blackhole');
   if (srcBtn) {
@@ -1863,6 +1869,9 @@ function activateFreezeEffect() {
 }
 
 function activateFreeze() {
+  if (getBoosterBalance('freeze') <= 0) { setBoosterRewardOverlay(true, 'freeze'); return; }
+  if (typeof Sounds !== 'undefined') Sounds.boosterClick();
+  addBoosterBalance('freeze', -1);
   hideBoosterTutorial();
   var srcBtn = document.getElementById('booster-freeze');
   if (srcBtn) {

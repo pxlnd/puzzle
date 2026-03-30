@@ -16,6 +16,7 @@ body {
   overflow: hidden;
   font-family: "Open Sans", Arial, sans-serif;
   background: #4a21bf;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .popup,
@@ -23,6 +24,21 @@ body {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+}
+
+button,
+img {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+}
+
+button:focus,
+button:focus-visible,
+button:active {
+  outline: none;
+  box-shadow: none;
 }
 
 .popup {

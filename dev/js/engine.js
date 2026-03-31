@@ -484,9 +484,10 @@ function createFigure(shapeName, color, startCol, startRow, moveAxis, outlineCol
   fig.appendChild(canvas);
   if (fig._moveAxis === 'x' || fig._moveAxis === 'y') {
     var arrow = document.createElement('div');
-    arrow.className = 'figure-arrow';
-    arrow.textContent = fig._moveAxis === 'x' ? '↔\uFE0E' : '↕\uFE0E';
-    arrow.style.fontSize = Math.max(30, Math.floor(Math.min(W, H) * 0.62)) + 'px';
+    arrow.className = 'figure-arrow' + (fig._moveAxis === 'y' ? ' axis-y' : '');
+    // Use one base glyph and rotate for Y-axis so both arrows look identical.
+    arrow.textContent = '↔\uFE0E';
+    arrow.style.fontSize = Math.max(33, Math.floor(Math.min(W, H) * 0.682)) + 'px';
     fig.appendChild(arrow);
   }
   scene.appendChild(fig);

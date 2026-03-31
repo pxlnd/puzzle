@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@800&display=swap');
+
 * {
     margin: 0;
     padding: 0;
@@ -72,13 +74,14 @@ body {
     align-items: center;
     justify-content: center;
     gap: clamp(4px, 1.2vw, 10px);
-    color: #063f98;
+    color: #00388D;
     text-shadow: 0 2px 0 rgba(255, 255, 255, 0.2);
 }
 
 .badge-caption {
     font-size: clamp(22px, 5.2vw, 44px);
-    font-weight: 900;
+    font-family: 'Open Sans', 'Arial Black', Impact, sans-serif;
+    font-weight: 800;
     text-transform: uppercase;
     line-height: 1;
     letter-spacing: 0.4px;
@@ -86,7 +89,8 @@ body {
 
 .badge-value {
     font-size: clamp(22px, 5.2vw, 44px);
-    font-weight: 900;
+    font-family: 'Open Sans', 'Arial Black', Impact, sans-serif;
+    font-weight: 800;
     line-height: 1;
 }
 
@@ -97,7 +101,7 @@ body {
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    color: #0042a5;
+    color: #00388D;
     text-shadow: none;
 }
 
@@ -107,7 +111,8 @@ body {
 
 #time-value {
     font-size: clamp(32px, 6.2vw, 50px);
-    font-weight: 900;
+    font-family: 'Open Sans', 'Arial Black', Impact, sans-serif;
+    font-weight: 800;
     line-height: 1;
     min-width: clamp(176px, 29vw, 246px);
     text-align: center;
@@ -176,13 +181,13 @@ body {
     grid-template-rows: repeat(7, 64px);
     gap: 8px;
     padding: 16px;
-    background: #3d4d60;
+    background: #294562;
     border-radius: 18px;
     box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.5);
 }
 
 .board-cell {
-    background: #2e3d4e;
+    background: #143B56;
     border-radius: 8px;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
 }
@@ -408,10 +413,8 @@ body.explosion-shake {
 
 .figure-arrow {
     position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    left: 50%;
+    top: 50%;
     color: rgba(255, 255, 255, 0.9);
     font-family: 'Arial Black', Impact, sans-serif;
     font-size: 52px;
@@ -420,6 +423,11 @@ body.explosion-shake {
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
     pointer-events: none;
     z-index: 1;
+    transform: translate(-50%, -50%);
+}
+
+.figure-arrow.axis-y {
+    transform: translate(-50%, -50%) rotate(90deg);
 }
 
 /* ── призрак на сетке ────────────────────────────────────────────────── */
@@ -1791,6 +1799,8 @@ body {
     align-items: center;
     gap: clamp(14px, 2.6vw, 20px);
     padding: 0 18px;
+    transform: scale(0.7225);
+    transform-origin: top center;
 }
 
 #level-badge {
@@ -1802,7 +1812,7 @@ body {
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    color: #0a4197;
+    color: #00388D;
     text-shadow: 0 3px 0 rgba(10, 48, 114, 0.16);
     flex-direction: row;
     gap: 10px;
@@ -1810,7 +1820,9 @@ body {
 
 .badge-caption,
 .badge-value {
+    font-family: 'Open Sans', 'Arial Black', Impact, sans-serif;
     font-size: clamp(28px, 5.8vw, 40px);
+    font-weight: 800;
     line-height: 1;
     letter-spacing: 0.03em;
 }
@@ -1824,7 +1836,8 @@ body {
     box-shadow: none;
     padding: 0;
     justify-content: space-between;
-    gap: clamp(18px, 3vw, 30px);
+    gap: calc(clamp(18px, 3vw, 30px) + 10px);
+    margin-top: 15px;
 }
 
 .icon-btn {
@@ -1862,6 +1875,7 @@ body {
     align-items: center;
     justify-content: center;
     background: center/100% 100% no-repeat url('../UI/GameScreen/timer_panel.png');
+    color: #00388D;
     text-shadow: 0 2px 0 rgba(12, 47, 114, 0.22);
 }
 
@@ -1879,9 +1893,10 @@ body {
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    color: #0c4295;
+    color: #00388D;
+    font-family: 'Open Sans', 'Arial Black', Impact, sans-serif;
     font-size: clamp(34px, 6.8vw, 48px);
-    font-weight: 700;
+    font-weight: 800;
     padding: 0 0 2px;
 }
 
@@ -1896,12 +1911,12 @@ body {
 
 #board {
     border-radius: 20px;
-    background: #244768;
+    background: #294562;
     box-shadow: inset 0 3px 0 rgba(122, 177, 229, 0.18);
 }
 
 .board-cell {
-    background: #1c4669;
+    background: #143B56;
     border-radius: 10px;
     box-shadow: none;
 }
@@ -2082,7 +2097,7 @@ body {
 
     #hud-main {
         width: calc(100vw - 40px);
-        gap: 14px;
+        gap: 24px;
     }
 
     .icon-btn,

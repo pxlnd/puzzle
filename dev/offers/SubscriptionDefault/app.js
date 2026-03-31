@@ -106,6 +106,14 @@
   }
 
   function bindEvents() {
+    document.addEventListener('contextmenu', function (event) {
+      event.preventDefault();
+    });
+
+    document.addEventListener('dragstart', function (event) {
+      event.preventDefault();
+    });
+
     const closeButton = document.querySelector('[data-action="close"]');
     if (closeButton) {
       closeButton.addEventListener('click', closePopup);

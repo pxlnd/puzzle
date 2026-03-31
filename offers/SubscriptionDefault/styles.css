@@ -19,6 +19,8 @@
 
 img {
   -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
 }
 
 body {
@@ -31,6 +33,7 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
   color: var(--text-primary);
+  -webkit-touch-callout: none;
 }
 
 .container {

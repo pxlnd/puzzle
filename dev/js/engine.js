@@ -276,6 +276,7 @@ var ghostPosCol = null;
 var ghostPosRow = null;
 var ghostStyleW = 0;
 var ghostStyleH = 0;
+var dragGhostEnabled = false;
 
 function redrawGhost(fig, W, H, valid) {
   if (!ghostCanvas) return;
@@ -290,6 +291,7 @@ function redrawGhost(fig, W, H, valid) {
 }
 
 function showGhost(fig, col, row, valid) {
+  if (!dragGhostEnabled) return;
   if (!fig) return;
   var W = fig._W || (fig._maxC * (CELL + GAP) + CELL);
   var H = fig._H || (fig._maxR * (CELL + GAP) + CELL);
@@ -331,6 +333,10 @@ function hideGhost() {
   if (ghostEl.style.display !== 'none') ghostEl.style.display = 'none';
   ghostPosCol = null;
   ghostPosRow = null;
+  ghostDrawFigure = null;
+  ghostDrawValid = null;
+  ghostDrawW = 0;
+  ghostDrawH = 0;
 }
 
 // ── Particles ─────────────────────────────────────────────────────────────────
@@ -473,6 +479,7 @@ function createFigure(shapeName, color, startCol, startRow, moveAxis, outlineCol
   fig._outlineColorKey = toColorKey(outlineColor || null);
   fig._outlineActive = !!fig._outlineColorKey;
   fig._colorKey = currentFigureColorKey(fig);
+  fig._isRemoving = false;
   fig._moveAxis = moveAxis || null;
   fig._W = W;
   fig._H = H;
@@ -572,6 +579,7 @@ function findUnderlyingFigureAtPoint(fig, clientX, clientY) {
 
 function attachDrag(fig) {
   function startDrag(e) {
+    if (fig._isRemoving || !fig.isConnected) return;
     var xy = getXY(e);
     if (!isPointInsideFigureShape(fig, xy.x, xy.y)) {
       var underlying = findUnderlyingFigureAtPoint(fig, xy.x, xy.y);
@@ -713,6 +721,9 @@ function attachDrag(fig) {
     }
 
     function removeFigureThroughWall(wall) {
+      if (fig._isRemoving) return true;
+      fig._isRemoving = true;
+      fig.style.pointerEvents = 'none';
       var wallHex = WALL_HEX[wall._colorKey] || '#ffffff';
       wall.style.transition = 'transform 0.15s, filter 0.15s';
       wall.style.transform  = 'scale(1.18)';
@@ -726,6 +737,7 @@ function attachDrag(fig) {
       fig.style.transform  = 'scale(1.15)';
       fig.style.opacity    = '0';
       setTimeout(function() {
+        freeCells(fig);
         fig.remove();
         if (typeof window.onFigureRemoved === 'function') window.onFigureRemoved(fig);
         figureCount--;
@@ -993,6 +1005,7 @@ function initLevel(cfg) {
   blockers.forEach(function(b) { b.remove(); });
   blockers.length = 0;
   document.querySelectorAll('.figure').forEach(function(f) { f.remove(); });
+  hideGhost();
   occupied.clear();
   figureCount = 0;
 

@@ -1492,6 +1492,8 @@ function triggerDynamiteExplosion(fig, dynEl, cx, cy) {
   if (dynEl.parentNode) dynEl.parentNode.removeChild(dynEl);
   if (typeof Sounds !== 'undefined') Sounds.dynamiteExplode();
   spawnExplosionParticles(cx, cy, fig._color || '#888888');
+  fig._isRemoving = true;
+  fig.style.pointerEvents = 'none';
   // Screen shake
   document.body.classList.remove('explosion-shake');
   void document.body.offsetWidth; // reflow to restart animation
@@ -1780,6 +1782,8 @@ function startBlackholeSelectMode() {
 function startBlackholeEffect(fig) {
   sendBoosterUsedEvent('blackhole');
   if (typeof Sounds !== 'undefined') Sounds.blackhole();
+  fig._isRemoving = true;
+  fig.style.pointerEvents = 'none';
   var rect = fig.getBoundingClientRect();
   var cx = rect.left + rect.width  / 2;
   var cy = rect.top  + rect.height / 2;

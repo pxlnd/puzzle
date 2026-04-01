@@ -409,7 +409,7 @@ function renderTimer() {
 function restartCurrentLevel() {
   clearLevelTimer();
   setOutTimeOverlay(false);
-  transitionToLevel(currentLevel);
+  transitionToLevel(currentLevel, { forceReload: true });
 }
 
 function runLevelTimer() {
@@ -2054,19 +2054,84 @@ function loadLevel(idx) {
 // ── Fade ──────────────────────────────────────────────────────────────────────
 
 var fadeOverlay = document.getElementById('fade-overlay');
+var initialLevelLoaded = false;
+var initialLevelTimerId = null;
+var initialRevealDone = false;
+var initialRevealTimerId = null;
+var INITIAL_LEVEL_BOOT_DELAY_MS = 1000;
+var INITIAL_REVEAL_SETTLE_MS = 260;
+var FADE_DURATION_MS = 350;
+
+function normalizeLevelIndex(value) {
+  var parsed = parseInt(value, 10);
+  if (!isFinite(parsed)) return 0;
+  return Math.max(0, Math.min(LEVELS.length - 1, parsed - 1));
+}
+
+function bootstrapLevel(idx) {
+  if (initialLevelLoaded) return;
+  initialLevelLoaded = true;
+  fadeOverlay.style.transition = 'none';
+  fadeOverlay.style.opacity = '1';
+  if (initialLevelTimerId) {
+    clearTimeout(initialLevelTimerId);
+    initialLevelTimerId = null;
+  }
+  currentLevel = idx;
+  loadLevel(currentLevel);
+  updateNavLabel();
+  scheduleInitialReveal();
+}
+
+function scheduleInitialLevelBootstrap() {
+  if (initialLevelLoaded || initialLevelTimerId) return;
+  // Small startup delay gives host app time to call setLevel(...) before first render.
+  initialLevelTimerId = setTimeout(function() {
+    initialLevelTimerId = null;
+    bootstrapLevel(0);
+  }, INITIAL_LEVEL_BOOT_DELAY_MS);
+}
+
+function scheduleInitialReveal() {
+  if (initialRevealDone) return;
+  if (initialRevealTimerId) clearTimeout(initialRevealTimerId);
+  initialRevealTimerId = setTimeout(function() {
+    initialRevealTimerId = null;
+    initialRevealDone = true;
+    fadeIn();
+  }, INITIAL_REVEAL_SETTLE_MS);
+}
 
 function fadeIn() {
-  fadeOverlay.style.transition = 'opacity 0.35s ease';
-  fadeOverlay.style.opacity = '0';
+  // Wait for at least one full paint cycle so partially-built level never flashes.
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      fadeOverlay.style.transition = 'opacity 0.35s ease';
+      fadeOverlay.style.opacity = '0';
+    });
+  });
 }
 
 function fadeOut(cb) {
   fadeOverlay.style.transition = 'opacity 0.35s ease';
   fadeOverlay.style.opacity = '1';
-  setTimeout(cb, 350);
+  setTimeout(cb, FADE_DURATION_MS);
 }
 
-function transitionToLevel(idx) {
+function transitionToLevel(idx, options) {
+  var forceReload = !!(options && options.forceReload);
+  if (!initialLevelLoaded) {
+    bootstrapLevel(Math.max(0, Math.min(LEVELS.length - 1, idx)));
+    return;
+  }
+  if (!forceReload && idx === currentLevel) return;
+  if (!initialRevealDone) {
+    currentLevel = idx;
+    loadLevel(currentLevel);
+    updateNavLabel();
+    scheduleInitialReveal();
+    return;
+  }
   clearLevelTimer();
   setOutTimeOverlay(false);
   fadeOut(function() {
@@ -2078,7 +2143,21 @@ function transitionToLevel(idx) {
 }
 
 function setLevel(value) {
-  transitionToLevel(Math.max(0, Math.min(LEVELS.length - 1, parseInt(value) - 1)));
+  var targetLevel = normalizeLevelIndex(value);
+  if (!initialLevelLoaded) {
+    bootstrapLevel(targetLevel);
+    return;
+  }
+  if (!initialRevealDone) {
+    if (targetLevel !== currentLevel) {
+      currentLevel = targetLevel;
+      loadLevel(currentLevel);
+      updateNavLabel();
+    }
+    scheduleInitialReveal();
+    return;
+  }
+  transitionToLevel(targetLevel);
 }
 
 function rewardResult(value) {
@@ -2328,8 +2407,7 @@ outTimeRestartBtn.addEventListener('click', function() {
   if (heartsCount > 0) {
     heartsCount -= 1;
     updateHeartsView();
-    loadLevel(currentLevel);
-    setOutTimeOverlay(false);
+    transitionToLevel(currentLevel, { forceReload: true });
   }
 });
 
@@ -2428,10 +2506,10 @@ document.addEventListener('pointerdown', function(e) {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-loadLevel(0);
-updateNavLabel();
+fadeOverlay.style.transition = 'none';
+fadeOverlay.style.opacity = '1';
 updateCoinsView();
 updateHeartsView();
 setTimeOutCoinsCost(timeOutCoinsCost);
-fadeIn();
+scheduleInitialLevelBootstrap();
 scheduleDeferredImagesHydration();

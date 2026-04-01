@@ -105,6 +105,14 @@
     window.location.href = 'uniwebview://purchase';
   }
 
+  function openTermsOfUse() {
+    window.location.href = 'https://pxlnd.com/terms.html';
+  }
+
+  function openPrivacyPolicy() {
+    window.location.href = 'https://pxlnd.com/privacy.html';
+  }
+
   function bindEvents() {
     document.addEventListener('contextmenu', function (event) {
       event.preventDefault();
@@ -122,6 +130,16 @@
     const subscribeButton = document.querySelector('.subscribe-btn');
     if (subscribeButton) {
       subscribeButton.addEventListener('click', purchaseSubscription);
+    }
+
+    const termsButton = document.querySelector(selectors.termsOfUse);
+    if (termsButton) {
+      termsButton.addEventListener('click', openTermsOfUse);
+    }
+
+    const privacyButton = document.querySelector(selectors.privacyPolicy);
+    if (privacyButton) {
+      privacyButton.addEventListener('click', openPrivacyPolicy);
     }
   }
 

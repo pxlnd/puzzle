@@ -10,6 +10,7 @@ var occupied  = new Map();
 var walls     = [];
 var blockers  = [];
 var figureCount = 0;
+var levelRevision = 0;
 var WALL_HEX = {
   green: '#4caf50',
   cyan: '#29b6f6',
@@ -600,6 +601,8 @@ function attachDrag(fig) {
     var sceneRect = scene.getBoundingClientRect();
     var rafMoveId = 0;
     var pendingMoveEvent = null;
+    var dragRevision = levelRevision;
+    var dragEnded = false;
 
     fig.classList.add('dragging');
     fig.style.zIndex = 20;
@@ -877,7 +880,44 @@ function attachDrag(fig) {
       showGhost(fig, lastValidCol, lastValidRow, true);
     }
 
+    function isDragInvalid() {
+      return dragRevision !== levelRevision || !fig.isConnected || fig._isRemoving;
+    }
+
+    function detachDragListeners() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend',  onUp);
+    }
+
+    function finalizeDrag(skipPendingMove) {
+      if (dragEnded) return;
+      dragEnded = true;
+      if (rafMoveId) {
+        cancelAnimationFrame(rafMoveId);
+        rafMoveId = 0;
+      }
+      if (!skipPendingMove && pendingMoveEvent) {
+        processMoveEvent(pendingMoveEvent);
+      }
+      pendingMoveEvent = null;
+      if (typeof window.onFigureDragState === 'function') window.onFigureDragState(fig, false);
+      if (!skipPendingMove && typeof Sounds !== 'undefined') Sounds.drop();
+      fig.classList.remove('dragging');
+      fig.style.filter = '';
+      fig.style.zIndex = 10;
+      fig.style.willChange = '';
+      hideGhost();
+      clearWallVisuals();
+      detachDragListeners();
+    }
+
     var onMove = function(ev) {
+      if (isDragInvalid()) {
+        finalizeDrag(true);
+        return;
+      }
       if (ev.cancelable) ev.preventDefault();
       pendingMoveEvent = ev;
       if (rafMoveId) return;
@@ -890,26 +930,11 @@ function attachDrag(fig) {
     };
 
     var onUp = function(e) {
-      if (rafMoveId) {
-        cancelAnimationFrame(rafMoveId);
-        rafMoveId = 0;
+      if (isDragInvalid()) {
+        finalizeDrag(true);
+        return;
       }
-      if (pendingMoveEvent) {
-        processMoveEvent(pendingMoveEvent);
-        pendingMoveEvent = null;
-      }
-      if (typeof window.onFigureDragState === 'function') window.onFigureDragState(fig, false);
-      if (typeof Sounds !== 'undefined') Sounds.drop();
-      fig.classList.remove('dragging');
-      fig.style.filter = '';
-      fig.style.zIndex = 10;
-      fig.style.willChange = '';
-      hideGhost();
-      clearWallVisuals();
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup',   onUp);
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend',  onUp);
+      finalizeDrag(false);
       var xy = getXY(e);
       var pointerX = (xy.x - sceneRect.left) / gameScale;
       var pointerY = (xy.y - sceneRect.top) / gameScale;
@@ -990,6 +1015,7 @@ function scaleGame() {
 // ── initLevel ─────────────────────────────────────────────────────────────────
 
 function initLevel(cfg) {
+  levelRevision++;
   COLS    = cfg.cols;
   ROWS    = cfg.rows;
   BOARD_W = COLS * CELL + (COLS - 1) * GAP + 2 * PAD;

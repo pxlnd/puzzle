@@ -148,10 +148,45 @@ button:active {
   color: #e8ffe4;
   text-shadow: 0.03em 0.04em 0 #3d7f1a;
 }
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 10, 30, 1);
+  opacity: 1;
+  transition: opacity 0.45s ease;
+}
+
+.loading-spinner {
+  width: 56px;
+  height: 56px;
+  border: 5px solid rgba(255, 255, 255, 0.22);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
+}
+
+body.is-content-ready .loading-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 </style>
 </head>
 
 <body>
+<div class="loading-overlay" data-loading-overlay>
+  <div class="loading-spinner" aria-label="Loading" role="status"></div>
+</div>
 
 <div id="popup" class="popup">
   <div class="screen">
@@ -196,6 +231,45 @@ function setCloseDelay(value) {
     }
   }, delay * 1000);
 }
+
+var loader = {
+  readyClass: "is-content-ready",
+  selector: "[data-loading-overlay]",
+  isHidden: false
+};
+
+function hideLoadingOverlay() {
+  if (loader.isHidden) {
+    return;
+  }
+
+  loader.isHidden = true;
+  document.body.classList.add(loader.readyClass);
+
+  var overlay = document.querySelector(loader.selector);
+  if (!overlay) {
+    return;
+  }
+
+  function removeOverlay() {
+    overlay.remove();
+  }
+
+  overlay.addEventListener("transitionend", removeOverlay, { once: true });
+  window.setTimeout(removeOverlay, 650);
+}
+
+function initLoadingOverlay() {
+  if (document.readyState === "complete") {
+    window.requestAnimationFrame(hideLoadingOverlay);
+    return;
+  }
+
+  window.addEventListener("load", hideLoadingOverlay, { once: true });
+  window.setTimeout(hideLoadingOverlay, 5000);
+}
+
+initLoadingOverlay();
 
 </script>
 

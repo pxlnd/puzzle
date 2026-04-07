@@ -36,6 +36,32 @@ body {
   -webkit-touch-callout: none;
 }
 
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 10, 30, 1);
+  opacity: 1;
+  transition: opacity 0.45s ease;
+}
+
+.loading-spinner {
+  width: 56px;
+  height: 56px;
+  border: 5px solid rgba(255, 255, 255, 0.22);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
+}
+
+body.is-content-ready .loading-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .container {
   position: relative;
   width: 100%;
@@ -197,6 +223,12 @@ body {
   font-size: 11px;
   color: var(--text-secondary);
   opacity: 0.6;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (min-width: 768px) {

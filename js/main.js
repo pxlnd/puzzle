@@ -2060,7 +2060,7 @@ var initialRevealDone = false;
 var initialRevealTimerId = null;
 var INITIAL_LEVEL_BOOT_DELAY_MS = 1000;
 var INITIAL_REVEAL_SETTLE_MS = 260;
-var FADE_DURATION_MS = 350;
+var LOAD_DELAY_MS = 350;
 
 function normalizeLevelIndex(value) {
   var parsed = parseInt(value, 10);
@@ -2113,9 +2113,9 @@ function fadeIn() {
 }
 
 function fadeOut(cb) {
-  fadeOverlay.style.transition = 'opacity 0.35s ease';
+  fadeOverlay.style.transition = 'opacity 0.0s ease';
   fadeOverlay.style.opacity = '1';
-  setTimeout(cb, FADE_DURATION_MS);
+  setTimeout(cb, LOAD_DELAY_MS);
 }
 
 function transitionToLevel(idx, options) {

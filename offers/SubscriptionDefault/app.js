@@ -106,11 +106,11 @@
   }
 
   function openTermsOfUse() {
-    window.location.href = 'https://pxlnd.com/terms.html';
+    window.location.href = 'uniwebview://openurl?link=pxlnd.com/terms.html';
   }
 
   function openPrivacyPolicy() {
-    window.location.href = 'https://pxlnd.com/privacy.html';
+    window.location.href = 'uniwebview://openurl?link=pxlnd.com/privacy.html';
   }
 
   function bindEvents() {

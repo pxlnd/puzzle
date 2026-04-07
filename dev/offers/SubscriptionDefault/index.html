@@ -13,6 +13,10 @@
   <title>VIP Membership</title>
 </head>
 <body>
+  <div class="loading-overlay" data-loading-overlay>
+    <div class="loading-spinner" aria-label="Loading" role="status"></div>
+  </div>
+
   <main class="container">
     <button class="close-btn" type="button" data-action="close" aria-label="Close offer">
       <img src="Sprites/close.png" alt="Close" />
@@ -75,6 +79,45 @@
     </p>
   </main>
 
+  <script>
+    var loader = {
+      readyClass: 'is-content-ready',
+      selector: '[data-loading-overlay]',
+      isHidden: false,
+    };
+
+    function hideLoadingOverlay() {
+      if (loader.isHidden) {
+        return;
+      }
+
+      loader.isHidden = true;
+      document.body.classList.add(loader.readyClass);
+
+      const overlay = document.querySelector(loader.selector);
+      if (!overlay) {
+        return;
+      }
+
+      function removeOverlay() {
+        overlay.remove();
+      }
+
+      overlay.addEventListener('transitionend', removeOverlay, { once: true });
+      window.setTimeout(removeOverlay, 650);
+    }
+
+    function initLoadingOverlay() {
+      if (document.readyState === 'complete') {
+        window.requestAnimationFrame(hideLoadingOverlay);
+        return;
+      }
+
+      window.addEventListener('load', hideLoadingOverlay, { once: true });
+      window.setTimeout(hideLoadingOverlay, 5000);
+    }
+    initLoadingOverlay();
+  </script>
   <script src="app.js" defer></script>
 </body>
 </html>

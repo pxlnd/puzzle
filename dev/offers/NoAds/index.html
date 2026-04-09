@@ -68,14 +68,13 @@ button:active {
 
 .close-btn {
   position: absolute;
-  top: calc(env(safe-area-inset-top) + clamp(20px, 5.6vh, 86px));
+  top: calc(env(safe-area-inset-top) + clamp(6px, 3.6vh, 86px));
   right: clamp(8px, 3.2vw, 24px);
   z-index: 3;
   border: 0;
   padding: 0;
   margin: 0;
   background: transparent;
-  color: #9f85ff;
   font-family: "Open Sans", Arial, sans-serif;
   font-size: clamp(42px, 7.6vw, 78px);
   font-weight: 700;
@@ -84,10 +83,18 @@ button:active {
   opacity: 1;
   pointer-events: auto;
   transition: opacity 0.2s ease;
+  width: 6vw;
+  height: 6vw;
+}
+
+.close-btn img {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .content {
-  margin-top: clamp(58px, 14.6vh, 235px);
+  margin-top: clamp(58px, 10vh, 235px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -98,10 +105,11 @@ button:active {
   margin: 0;
   font-size: clamp(48px, 9.2vw, 88px);
   font-weight: 800;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
   line-height: 0.96;
-  -webkit-text-stroke: clamp(1px, 0.35vw, 4px) #2f0f6c;
+  -webkit-text-stroke: 6px #2f0f6c;
   text-shadow: 0.035em 0.045em 0 #2f0f6c;
+  paint-order: stroke fill;
 }
 
 .title-accent {
@@ -111,7 +119,7 @@ button:active {
 .desc {
   margin: clamp(14px, 2.6vh, 28px) 0 0;
   font-size: clamp(20px, 3.5vw, 34px);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.18;
   font-family: "Open Sans", Arial, sans-serif;
 }
@@ -171,18 +179,18 @@ button:active {
 .sale-badge {
   position: absolute;
   right: -14px;
-  top: -8px;
-  width: 78px;
+  top: -6px;
+  width: 74px;
   height: 36px;
   margin: 0px;
   padding: 0px;
   text-align: center;
   vertical-align: middle;
   transform: translateY(-26%);
-  border-radius: clamp(14px, 2.8vw, 24px);
+  border-radius: clamp(10px, 2.8vw, 24px);
   background: #FA242D;
   color: #ffffff;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 800;
   line-height: 38px;
   box-shadow: 0 4px 0 #8b1818;
@@ -211,23 +219,25 @@ button:active {
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: clamp(26px, 9vw, 64px);
+  font-size: clamp(28px, 9vw, 64px);
   font-weight: 800;
   color: #fff;
-  text-shadow: 0.03em 0.04em 0 #3d7f1a;
+  text-shadow: 0.04em 0.07em 0 #3d7f1a;
   font-family: "Open Sans", Arial, sans-serif;
-  padding-bottom: 4px;
-  -webkit-text-stroke: clamp(1px, 0.18vw, 2px) #2E8100;
+  padding-bottom: 6px;
+  -webkit-text-stroke: clamp(3px, 0.18vw, 3px) #2E8100;
+  paint-order: stroke fill;
 }
 
 .offer-timer {
-  margin: clamp(18px, 1.2vh, 34px) 0 0;
-  font-size: clamp(12px, 5vw, 58px);
+  margin: clamp(8px, 1.2vh, 34px) 0 0;
+  font-size: clamp(8px, 4.5vw, 58px);
   font-weight: 800;
   line-height: 1;
   color: #f4f0ff;
-  -webkit-text-stroke: clamp(1px, 0.18vw, 2px) #4b148f;
-  text-shadow: 0.03em 0.04em 0 #4b148f;
+  -webkit-text-stroke: clamp(3px, 0.18vw, 3px) #4b148f;
+  text-shadow: 0.05em 0.07em 0 #4b148f;
+  paint-order: stroke fill;
 }
 
 #offer-countdown {
@@ -275,7 +285,7 @@ body.is-content-ready .loading-overlay {
 
 <div id="popup" class="popup">
   <div class="screen">
-    <button id="not-now-btn" class="close-btn" onclick="closePopup()" aria-label="Close popup">&times;</button>
+    <button id="not-now-btn" class="close-btn" onclick="closePopup()" aria-label="Close popup"><img src="images/close.png"></button>
 
     <div class="content">
       <h1 class="title">NO MORE <span class="title-accent">ADS</span></h1>

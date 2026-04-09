@@ -110,21 +110,89 @@ button:active {
 
 .desc {
   margin: clamp(14px, 2.6vh, 28px) 0 0;
-  font-size: clamp(16px, 3.5vw, 34px);
-  font-weight: 700;
+  font-size: clamp(20px, 3.5vw, 34px);
+  font-weight: 500;
   line-height: 1.18;
+  font-family: "Open Sans", Arial, sans-serif;
+}
+
+.desc span {
+  display: block;
 }
 
 .desc-main {
   color: #f9ff39;
+  margin-bottom: 4px;
 }
 
-.remove-btn {
+.offer-block {
   position: absolute;
   left: 50%;
   bottom: calc(env(safe-area-inset-bottom) + clamp(26px, 11.2vh, 220px));
   transform: translateX(-50%);
   width: min(68%, 500px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.offer-top {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.old-price {
+  position: relative;
+  display: inline-block;
+  font-size: clamp(26px, 3.8vw, 62px);
+  font-weight: 800;
+  line-height: 1;
+  color: #ffd7ff;
+  -webkit-text-stroke: clamp(1px, 0.2vw, 2px) #a732c9;
+  text-shadow: 0.03em 0.05em 0 #7727a7;
+  font-family: "Open Sans", Arial, sans-serif;
+}
+
+.old-price::after {
+  content: "";
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  top: 50%;
+  height: clamp(4px, 0.85vw, 7px);
+  border-radius: 999px;
+  background: #f7e0ff;
+  transform: rotate(-6deg);
+}
+
+.sale-badge {
+  position: absolute;
+  right: -14px;
+  top: -8px;
+  width: 78px;
+  height: 36px;
+  margin: 0px;
+  padding: 0px;
+  text-align: center;
+  vertical-align: middle;
+  transform: translateY(-26%);
+  border-radius: clamp(14px, 2.8vw, 24px);
+  background: #FA242D;
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 38px;
+  box-shadow: 0 4px 0 #8b1818;
+  text-shadow: 0.03em 0.04em 0 rgba(120, 0, 0, 0.65);
+  font-family: "Open Sans", Arial, sans-serif;
+}
+
+.remove-btn {
+  position: relative;
+  width: 80%;
   border: 0;
   padding: 0;
   margin: 0;
@@ -143,10 +211,27 @@ button:active {
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: clamp(26px, 6vw, 64px);
-  font-weight: 700;
-  color: #e8ffe4;
+  font-size: clamp(26px, 9vw, 64px);
+  font-weight: 800;
+  color: #fff;
   text-shadow: 0.03em 0.04em 0 #3d7f1a;
+  font-family: "Open Sans", Arial, sans-serif;
+  padding-bottom: 4px;
+  -webkit-text-stroke: clamp(1px, 0.18vw, 2px) #2E8100;
+}
+
+.offer-timer {
+  margin: clamp(18px, 1.2vh, 34px) 0 0;
+  font-size: clamp(12px, 5vw, 58px);
+  font-weight: 800;
+  line-height: 1;
+  color: #f4f0ff;
+  -webkit-text-stroke: clamp(1px, 0.18vw, 2px) #4b148f;
+  text-shadow: 0.03em 0.04em 0 #4b148f;
+}
+
+#offer-countdown {
+  font-variant-numeric: tabular-nums;
 }
 
 .loading-overlay {
@@ -196,15 +281,24 @@ body.is-content-ready .loading-overlay {
       <h1 class="title">NO MORE <span class="title-accent">ADS</span></h1>
 
       <div class="desc">
-        <span class="desc-main">Remove all pop-up ads.</span><br>
+        <span class="desc-main">Remove all pop-up ads.</span>
         <span>Keep optional ads for rewards.</span>
       </div>
     </div>
 
-    <button class="remove-btn" onclick="removeAds()" aria-label="Remove ads for $5.99">
-      <img src="images/button.png" alt="">
-      <span>$5.99</span>
-    </button>
+    <div class="offer-block">
+      <div class="offer-top">
+        <span class="old-price">$12.00</span>
+      </div>
+
+      <button class="remove-btn" onclick="removeAds()" aria-label="Remove ads for $5.99">
+        <img src="images/button.png" alt="">
+        <span>$5.99</span>
+        <p class="sale-badge">-50%</p>
+      </button>
+
+      <p class="offer-timer">Time left: <span id="offer-countdown">15:26:21</span></p>
+    </div>
   </div>
 </div>
 
@@ -230,6 +324,71 @@ function setCloseDelay(value) {
       closeBtn.style.pointerEvents = "auto";
     }
   }, delay * 1000);
+}
+
+var OFFER_TIMER_DEFAULT_SECONDS = 3 * 60;
+var offerTimerRemaining = OFFER_TIMER_DEFAULT_SECONDS;
+var offerTimerId = null;
+var offerTimerExpired = false;
+
+function formatOfferTimer(seconds) {
+  var total = Math.max(0, seconds | 0);
+  var hours = Math.floor(total / 3600);
+  var minutes = Math.floor((total % 3600) / 60);
+  var secs = total % 60;
+
+  return String(hours).padStart(2, "0") + ":" + String(minutes).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+}
+
+function updateOfferTimerText() {
+  var countdown = document.getElementById("offer-countdown");
+  if (!countdown) {
+    return;
+  }
+
+  countdown.textContent = formatOfferTimer(offerTimerRemaining);
+}
+
+function handleOfferTimerExpired() {
+  if (offerTimerExpired) {
+    return;
+  }
+
+  offerTimerExpired = true;
+  if (offerTimerId) {
+    clearInterval(offerTimerId);
+    offerTimerId = null;
+  }
+  updateOfferTimerText();
+  closePopup();
+}
+
+function startOfferTimer() {
+  updateOfferTimerText();
+
+  if (offerTimerId) {
+    clearInterval(offerTimerId);
+    offerTimerId = null;
+  }
+
+  if (offerTimerRemaining <= 0) {
+    handleOfferTimerExpired();
+    return;
+  }
+
+  offerTimerId = setInterval(function() {
+    if (offerTimerRemaining <= 0) {
+      handleOfferTimerExpired();
+      return;
+    }
+
+    offerTimerRemaining -= 1;
+    updateOfferTimerText();
+
+    if (offerTimerRemaining <= 0) {
+      handleOfferTimerExpired();
+    }
+  }, 1000);
 }
 
 var loader = {
@@ -270,6 +429,7 @@ function initLoadingOverlay() {
 }
 
 initLoadingOverlay();
+startOfferTimer();
 
 </script>
 
